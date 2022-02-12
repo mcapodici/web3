@@ -1,11 +1,10 @@
 import type { NextPage } from "next";
 import Layout from "components/Layout";
 import { Form, Input, Button, Table } from "semantic-ui-react";
-import { HasEthereumProviderProps } from "ethereum/ethereumProvider";
 
-const Home: NextPage<HasEthereumProviderProps> = ({ethereumProviderStatus}) => {
+const Home: NextPage = () => {
   return (
-    <Layout ethereumProviderStatus={ethereumProviderStatus}>
+    <Layout>
       <h1>Bank Account</h1>
       <p>
         The bank account example is a simple smart contract to which you can
