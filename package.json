@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "compile": "ts-node ethereum/compile.ts"
   },
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
@@ -16,10 +17,14 @@
     "semantic-ui-react": "^2.1.1"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
     "@types/node": "17.0.17",
     "@types/react": "17.0.39",
     "eslint": "8.8.0",
     "eslint-config-next": "12.0.10",
+    "fs-extra": "^10.0.0",
+    "solc": "^0.8.11",
+    "ts-node": "^10.5.0",
     "typescript": "4.5.5"
   }
 }
