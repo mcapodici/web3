@@ -23,11 +23,12 @@ const Layout = (props: Props) => {
           <Grid.Column width={12}>
             {props.ethereumProviderStatus === HasEthereumProviderStatus.No && (
               <Message icon warning>
-                <Icon name='ethereum' />
-                <Message.Header>MetaMask Required</Message.Header>
+                <Icon name="ethereum" />
                 <span>
-                To use this page, please install{" "}
-                <a href="https://metamask.io/download/">MetaMask</a>, or any other EIP-1193 compatiable Ethereum provider.
+                  <Message.Header>MetaMask Required</Message.Header>
+                  To use this page, please install{" "}
+                  <a href="https://metamask.io/download/">MetaMask</a>, or any
+                  other EIP-1193 compatiable Ethereum provider.
                 </span>
               </Message>
             )}
