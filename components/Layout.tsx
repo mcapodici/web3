@@ -25,7 +25,7 @@ const Layout = (props: Props) => {
               <Message icon warning>
                 <Icon name="ethereum" />
                 <span>
-                  <Message.Header>MetaMask Required</Message.Header>
+                  <Message.Header>Ethereum Plugin / Extension Required</Message.Header>
                   To use this page, please install{" "}
                   <a href="https://metamask.io/download/">MetaMask</a>, or any
                   other EIP-1193 compatiable Ethereum provider.
