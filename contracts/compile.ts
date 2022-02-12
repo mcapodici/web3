@@ -1,6 +1,3 @@
-// const path = require('path');
-// const solc = require('solc');
-// const fs = require('fs-extra');
 import path from 'path';
 import solc from 'solc';
 import fs from 'fs-extra';
@@ -8,7 +5,7 @@ import fs from 'fs-extra';
 const buildPath = path.resolve(__dirname, 'build');
 fs.removeSync(buildPath);
 
-const contractPath = path.resolve(__dirname, 'contracts', 'BankAccount.sol');
+const contractPath = path.resolve(__dirname, 'solidity', 'BankAccount.sol');
 const source = fs.readFileSync(contractPath).toString('utf-8');
 
 var input = {

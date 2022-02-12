@@ -1,0 +1,19 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "deploy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "ts-node .\\compile.ts"
+  },
+  "author": "",
+  "dependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "fs-extra": "^10.0.0",
+    "solc": "^0.8.11"
+  },
+  "devDependencies": {
+    "ts-node": "^10.5.0"
+  }
+}
