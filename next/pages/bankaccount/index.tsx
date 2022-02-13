@@ -12,26 +12,29 @@ import { useState } from "react";
 const Home: NextPage<HasEthereumProviderProps> = ({
   ethereumProviderStatus,
 }) => {
+  const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   );
+  const [createdAccountAddress, setCreatedAccountAddress] = useState<
+    string | undefined
+  >(undefined);
 
   async function createBankAccount() {
     setCreatingBankAccount(true);
+    setCreatedAccountAddress(undefined);
     setErrorMessage(undefined);
     try {
       const { web3, accounts } = await getWeb3WithAccounts();
       if (web3) {
         console.log(accounts);
-        const contract = await deployContract(web3, accounts[0]);
-        alert("Contract deployed to: " + contract.options.address);
-        // TODO - instead of alert, show nice UI element saying it is deployed. We also
-        // need to update the your bank accounts list.
+        const initialDespoitWei = web3.utils.toWei(initialDespoit, 'ether');
+        const contract = await deployContract(web3, accounts[0], initialDespoitWei);
+        setCreatedAccountAddress(contract.options.address);
       }
     } catch (ex) {
       setErrorMessage("Details from provider: " + ex.message);
-      // TODO show exception to user.
     }
     setCreatingBankAccount(false);
   }
@@ -84,7 +87,13 @@ const Home: NextPage<HasEthereumProviderProps> = ({
       <Form error={!!errorMessage}>
         <Form.Field>
           <label>Initial Deposit (Ether)</label>
-          <Input type="number" />
+          <Input
+            type="number"
+            value={initialDespoit}
+            onChange={(event) => {
+              setInitialDespoit(event.target.value);
+            }}
+          />
         </Form.Field>
         <Button
           primary
@@ -99,6 +108,15 @@ const Home: NextPage<HasEthereumProviderProps> = ({
           content={errorMessage}
           error
         />
+        {createdAccountAddress && (
+          <Message positive
+            onDismiss={() => {
+              setCreatedAccountAddress(undefined);
+            }}
+            header="Account Created"
+            content={`Your bank account has been created. The contract address is ${createdAccountAddress}`}
+          />
+        )}
       </Form>
     </Layout>
   );
