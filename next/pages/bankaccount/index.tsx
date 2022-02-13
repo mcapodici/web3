@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import Layout from "components/Layout";
-import { Form, Input, Button, Table } from "semantic-ui-react";
+import { Form, Input, Button, Table, Message } from "semantic-ui-react";
 import {
   HasEthereumProviderProps,
   EthereumProviderStatus,
@@ -13,20 +13,24 @@ const Home: NextPage<HasEthereumProviderProps> = ({
   ethereumProviderStatus,
 }) => {
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined
+  );
 
   async function createBankAccount() {
     setCreatingBankAccount(true);
+    setErrorMessage(undefined);
     try {
       const { web3, accounts } = await getWeb3WithAccounts();
       if (web3) {
         console.log(accounts);
         const contract = await deployContract(web3, accounts[0]);
-        alert('Contract deployed to: ' + contract.options.address);
+        alert("Contract deployed to: " + contract.options.address);
         // TODO - instead of alert, show nice UI element saying it is deployed. We also
         // need to update the your bank accounts list.
       }
     } catch (ex) {
-      console.log(ex);
+      setErrorMessage("Error occurred during account creation: " + ex.message);
       // TODO show exception to user.
     }
     setCreatingBankAccount(false);
@@ -77,7 +81,7 @@ const Home: NextPage<HasEthereumProviderProps> = ({
         You can create a bank account here. The initial deposit can be zero, if
         you like.
       </p>
-      <Form>
+      <Form error={!!errorMessage}>
         <Form.Field>
           <label>Initial Deposit (Ether)</label>
           <Input type="number" />
@@ -90,6 +94,11 @@ const Home: NextPage<HasEthereumProviderProps> = ({
         >
           Create Account
         </Button>
+        <Message
+          header="Error occured during account creation"
+          content={errorMessage}
+          error
+        />
       </Form>
     </Layout>
   );
