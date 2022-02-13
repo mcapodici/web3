@@ -30,7 +30,7 @@ const Home: NextPage<HasEthereumProviderProps> = ({
         // need to update the your bank accounts list.
       }
     } catch (ex) {
-      setErrorMessage("Error occurred during account creation: " + ex.message);
+      setErrorMessage("Details from provider: " + ex.message);
       // TODO show exception to user.
     }
     setCreatingBankAccount(false);
