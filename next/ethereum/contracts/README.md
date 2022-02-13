@@ -1,0 +1,1 @@
+The contract json files here are copied over from the build (/contracts/build) once they have been built.

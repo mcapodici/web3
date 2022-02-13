@@ -9,9 +9,13 @@
   },
   "author": "",
   "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.3",
+    "@types/dotenv": "^8.2.0",
     "@types/fs-extra": "^9.0.13",
+    "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
-    "solc": "^0.8.11"
+    "solc": "^0.8.11",
+    "web3": "^1.7.0"
   },
   "devDependencies": {
     "ts-node": "^10.5.0"
