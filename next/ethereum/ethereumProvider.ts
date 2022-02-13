@@ -2,7 +2,7 @@ import detectEthereumProvider from '@metamask/detect-provider';
 
 let ethereumProvider: unknown = undefined;
 
-export enum HasEthereumProviderStatus {
+export enum EthereumProviderStatus {
   Checking,
   Yes,
   No
@@ -15,7 +15,7 @@ export enum HasEthereumProviderStatus {
  */
 export async function init() {
   ethereumProvider = await detectEthereumProvider();
-  return ethereumProvider ? HasEthereumProviderStatus.Yes : HasEthereumProviderStatus.No;
+  return ethereumProvider ? EthereumProviderStatus.Yes : EthereumProviderStatus.No;
 }
 
 /**
@@ -31,5 +31,5 @@ export function getEthereumProvider() {
 
 
 export interface HasEthereumProviderProps {
-  ethereumProviderStatus?: HasEthereumProviderStatus;
+  ethereumProviderStatus?: EthereumProviderStatus;
 }

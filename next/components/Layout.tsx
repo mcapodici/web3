@@ -1,6 +1,6 @@
 import {
   HasEthereumProviderProps,
-  HasEthereumProviderStatus,
+  EthereumProviderStatus,
 } from "ethereum/ethereumProvider";
 import React from "react";
 import { Container, Grid, Icon, Message } from "semantic-ui-react";
@@ -21,7 +21,7 @@ const Layout = (props: Props) => {
             <SideNav />
           </Grid.Column>
           <Grid.Column width={12}>
-            {props.ethereumProviderStatus === HasEthereumProviderStatus.No && (
+            {props.ethereumProviderStatus === EthereumProviderStatus.No && (
               <Message icon warning>
                 <Icon name="ethereum" />
                 <span>

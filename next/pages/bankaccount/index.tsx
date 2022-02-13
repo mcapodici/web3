@@ -1,9 +1,10 @@
 import type { NextPage } from "next";
 import Layout from "components/Layout";
 import { Form, Input, Button, Table } from "semantic-ui-react";
-import { HasEthereumProviderProps } from "ethereum/ethereumProvider";
+import { HasEthereumProviderProps, EthereumProviderStatus } from "ethereum/ethereumProvider";
 
 const Home: NextPage<HasEthereumProviderProps> = ({ethereumProviderStatus}) => {
+  const interactionAllowed = ethereumProviderStatus === EthereumProviderStatus.Yes;
   return (
     <Layout ethereumProviderStatus={ethereumProviderStatus}>
       <h1>Bank Account</h1>
@@ -32,10 +33,10 @@ const Home: NextPage<HasEthereumProviderProps> = ({ethereumProviderStatus}) => {
             <Table.Cell>0x0883</Table.Cell>
             <Table.Cell>0.01</Table.Cell>
             <Table.Cell>
-              <Button primary>
+              <Button disabled={!interactionAllowed} primary>
                 Deposit
               </Button>
-              <Button primary>
+              <Button disabled={!interactionAllowed} primary>
                 Withdraw
               </Button>
             </Table.Cell>
@@ -52,7 +53,7 @@ const Home: NextPage<HasEthereumProviderProps> = ({ethereumProviderStatus}) => {
           <label>Initial Deposit (Ether)</label>
           <Input type="number" />
         </Form.Field>
-        <Button primary>Create Account</Button>
+        <Button primary disabled={!interactionAllowed}>Create Account</Button>
       </Form>
     </Layout>
   );
