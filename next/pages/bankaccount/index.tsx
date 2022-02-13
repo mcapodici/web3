@@ -1,10 +1,39 @@
 import type { NextPage } from "next";
 import Layout from "components/Layout";
 import { Form, Input, Button, Table } from "semantic-ui-react";
-import { HasEthereumProviderProps, EthereumProviderStatus } from "ethereum/ethereumProvider";
+import {
+  HasEthereumProviderProps,
+  EthereumProviderStatus,
+} from "ethereum/ethereumProvider";
+import { getWeb3WithAccounts } from "ethereum/web3";
+import { deployContract } from "ethereum/contracts/BankAccount";
+import { useState } from "react";
 
-const Home: NextPage<HasEthereumProviderProps> = ({ethereumProviderStatus}) => {
-  const interactionAllowed = ethereumProviderStatus === EthereumProviderStatus.Yes;
+const Home: NextPage<HasEthereumProviderProps> = ({
+  ethereumProviderStatus,
+}) => {
+  const [creatingBankAccount, setCreatingBankAccount] = useState(false);
+
+  async function createBankAccount() {
+    setCreatingBankAccount(true);
+    try {
+      const { web3, accounts } = await getWeb3WithAccounts();
+      if (web3) {
+        console.log(accounts);
+        const contract = await deployContract(web3, accounts[0]);
+        alert('Contract deployed to: ' + contract.options.address);
+        // TODO - instead of alert, show nice UI element saying it is deployed. We also
+        // need to update the your bank accounts list.
+      }
+    } catch (ex) {
+      console.log(ex);
+      // TODO show exception to user.
+    }
+    setCreatingBankAccount(false);
+  }
+
+  const interactionAllowed =
+    ethereumProviderStatus === EthereumProviderStatus.Yes;
   return (
     <Layout ethereumProviderStatus={ethereumProviderStatus}>
       <h1>Bank Account</h1>
@@ -53,7 +82,14 @@ const Home: NextPage<HasEthereumProviderProps> = ({ethereumProviderStatus}) => {
           <label>Initial Deposit (Ether)</label>
           <Input type="number" />
         </Form.Field>
-        <Button primary disabled={!interactionAllowed}>Create Account</Button>
+        <Button
+          primary
+          loading={creatingBankAccount}
+          onClick={createBankAccount}
+          disabled={!interactionAllowed}
+        >
+          Create Account
+        </Button>
       </Form>
     </Layout>
   );
