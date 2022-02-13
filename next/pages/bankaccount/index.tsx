@@ -114,7 +114,7 @@ const Home: NextPage<HasEthereumProviderProps> = ({
               setCreatedAccountAddress(undefined);
             }}
             header="Account Created"
-            content={`Your bank account has been created. The contract address is ${createdAccountAddress}`}
+            content={`Your bank account has been created. The contract address is ${createdAccountAddress}. It should appear soon in the bank account list above.`}
           />
         )}
       </Form>
