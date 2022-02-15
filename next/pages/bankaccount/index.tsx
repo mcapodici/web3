@@ -56,6 +56,9 @@ const Home: NextPage<INextPageProps> = ({
         that bank account will only allow withdrawals to the creator of the
         contract. Anyone can deposit Ether.
       </p>
+      <p>
+        Note that this is using the contract factory deployed to <code>{bankAccountFactoryAddress}</code>
+      </p>
       <h2>Your bank accounts</h2>
       <p>
         Here is a list of bank accounts connected to your current metamask
