@@ -12,9 +12,11 @@ import {
 } from "ethereum/contracts/BankAccountFactory";
 import { useEffect, useState } from "react";
 import dotEnv from "dotenv";
+import Web3 from "web3";
 
 interface INextPageProps extends HasEthereumProviderProps {
   bankAccountFactoryAddress: string;
+  addressLinkTemplate: string;
 }
 
 interface IBankAccountDetails {
@@ -25,6 +27,7 @@ interface IBankAccountDetails {
 const Home: NextPage<INextPageProps> = ({
   ethereumProviderStatus,
   bankAccountFactoryAddress,
+  addressLinkTemplate,
 }) => {
   const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
@@ -42,9 +45,9 @@ const Home: NextPage<INextPageProps> = ({
     setCreatingBankAccount(true);
     setCreatedAccountAddress(undefined);
     setErrorMessage(undefined);
-    try {
-      const { web3, accounts } = await getWeb3WithAccounts();
-      if (web3) {
+    const { web3, accounts } = await getWeb3WithAccounts();
+    if (web3) {
+      try {
         const initialDespoitWei = web3.utils.toWei(initialDespoit, "ether");
         const accountAddress = await createAccount(
           web3,
@@ -53,48 +56,82 @@ const Home: NextPage<INextPageProps> = ({
           initialDespoitWei
         );
         setCreatedAccountAddress(accountAddress);
+      } catch (ex) {
+        setErrorMessage("Details from provider: " + ex.message);
       }
-    } catch (ex) {
-      setErrorMessage("Details from provider: " + ex.message);
+      setCreatingBankAccount(false);
+      getExistingAccounts(web3, accounts);
     }
-    setCreatingBankAccount(false);
-    getExistingAccounts();
   }
 
-  async function getExistingAccounts() {
+  async function getExistingAccounts(web3: Web3, accounts: string[]) {
+    try {
+      const factoryContract = makeFactoryContractObject(
+        web3,
+        bankAccountFactoryAddress
+      );
+      const events = await factoryContract.getPastEvents("AccountCreated", {
+        filter: { sender: [accounts[0]] },
+        fromBlock: 1,
+      });
+
+      const bankAccountsDetails: IBankAccountDetails[] = events.map((ev) => ({
+        contractAddress: ev.returnValues.account,
+        balanceEther: "",
+      }));
+      setBankAccountsDetails(bankAccountsDetails);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function startBlockListener(web3: Web3) {
+    web3.eth.subscribe("newBlockHeaders", (err, result) => {
+      if (!err) getLatestBalances(web3);
+    });
+  }
+
+  async function getLatestBalances(web3: Web3) {
+    for (const bankAccountDetails of bankAccountsDetails) {
+      const address = bankAccountDetails.contractAddress;
+      web3.eth.getBalance(address).then((bal) => {
+        setBankAccountsDetails((details) =>
+          details.map((detail) =>
+            detail.contractAddress === address
+              ? { ...detail, balanceEther: web3.utils.fromWei(bal, "ether") }
+              : detail
+          )
+        );
+      });
+    }
+  }
+
+  async function init() {
     const { web3, accounts } = await getWeb3WithAccounts();
     if (web3) {
-      try {
-        const factoryContract = makeFactoryContractObject(
-          web3,
-          bankAccountFactoryAddress
-        );
-        const events = await factoryContract.getPastEvents("AccountCreated", {
-          filter: { sender: [accounts[0]] },
-          fromBlock: 1,
-        });
-
-        const bankAccountsDetails: IBankAccountDetails[] = events.map((ev) => ({
-          contractAddress: ev.returnValues.account,
-          balanceEther: "",
-        }));
-        setBankAccountsDetails(bankAccountsDetails);
-      } catch (err) {
-        console.error(err);
-      }
+      getExistingAccounts(web3, accounts);
+      startBlockListener(web3);
     }
   }
 
   useEffect(() => {
-    getExistingAccounts();
+    init();
   }, [ethereumProviderStatus]);
 
   const bankAccountsTables = bankAccountsDetails.map((account) => (
     <Table.Row key={account.contractAddress}>
       <Table.Cell>
-        <span title={account.contractAddress}>
-         {account.contractAddress.substr(0,10)}...{account.contractAddress.substring(34)}
-        </span>
+        <a
+          href={addressLinkTemplate.replace(
+            "{address}",
+            account.contractAddress
+          )}
+        >
+          <span title={account.contractAddress}>
+            {account.contractAddress.substr(0, 10)}...
+            {account.contractAddress.substring(34)}
+          </span>
+        </a>
       </Table.Cell>
       <Table.Cell>{account.balanceEther}</Table.Cell>
       <Table.Cell>
@@ -186,8 +223,9 @@ const Home: NextPage<INextPageProps> = ({
 export async function getStaticProps(context: any) {
   dotEnv.config();
   const bankAccountFactoryAddress = process.env.BANK_ACCOUNT_FACTORY_ADDRESS;
+  const addressLinkTemplate = process.env.ADDRESS_LINK_TEMPLATE;
   return {
-    props: { bankAccountFactoryAddress },
+    props: { bankAccountFactoryAddress, addressLinkTemplate },
   };
 }
 

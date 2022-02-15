@@ -3,12 +3,16 @@ import { getEthereumProvider } from "./ethereumProvider";
 
 let web3: Web3 | undefined = undefined;
 
+let epRequestPromise: Promise<unknown> | undefined;
+
 export async function getWeb3() {
   if (!web3) {
     const ep: any = getEthereumProvider();
 
     if (ep) {
-      await ep.request({ method: "eth_requestAccounts" });
+      if (!epRequestPromise)
+        epRequestPromise = ep.request({ method: "eth_requestAccounts" });
+      await epRequestPromise;
       web3 = new Web3(ep);
     }
   }
