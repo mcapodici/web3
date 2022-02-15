@@ -49,7 +49,6 @@ const Home: NextPage<INextPageProps> = ({
     ethereumProviderStatus === EthereumProviderStatus.Yes;
   return (
     <Layout ethereumProviderStatus={ethereumProviderStatus}>
-      <h2>Using factory address: {bankAccountFactoryAddress}</h2>
       <h1>Bank Account</h1>
       <p>
         The bank account example is a simple smart contract to which you can
