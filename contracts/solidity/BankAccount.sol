@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
+contract BankAccountFactory {
+
+    event AccountCreated(address indexed sender, address account);
+
+    function createAccount() public {    
+        address new_account = address(new BankAccount(msg.sender));
+        emit AccountCreated(msg.sender, new_account);
+    }
+    
+}
+
 contract BankAccount {
 
     address public owner;
@@ -10,8 +21,8 @@ contract BankAccount {
         _;
     }
 
-    constructor() payable {
-        owner = msg.sender;
+    constructor(address the_owner) payable {
+        owner = the_owner;
     }
 
     function deposit() public payable {

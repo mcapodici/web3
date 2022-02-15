@@ -9,7 +9,7 @@ const SideNav = () => {
         Basic Examples
         <Menu.Menu>
           <Menu.Item>
-            <Link href="/">Bank Account</Link>
+            <Link href="/bankaccount">Bank Account</Link>
           </Menu.Item>
           <Menu.Item>
             <Link href="/">Long Term Deposit</Link>

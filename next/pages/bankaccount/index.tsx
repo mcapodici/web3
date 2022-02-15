@@ -6,11 +6,17 @@ import {
   EthereumProviderStatus,
 } from "ethereum/ethereumProvider";
 import { getWeb3WithAccounts } from "ethereum/web3";
-import { deployContract } from "ethereum/contracts/BankAccount";
+import { createAccount } from "ethereum/contracts/BankAccountFactory";
 import { useState } from "react";
+import dotEnv from 'dotenv';
 
-const Home: NextPage<HasEthereumProviderProps> = ({
+interface INextPageProps extends HasEthereumProviderProps {
+  bankAccountFactoryAddress: string;
+}
+
+const Home: NextPage<INextPageProps> = ({
   ethereumProviderStatus,
+  bankAccountFactoryAddress
 }) => {
   const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
@@ -30,8 +36,8 @@ const Home: NextPage<HasEthereumProviderProps> = ({
       if (web3) {
         console.log(accounts);
         const initialDespoitWei = web3.utils.toWei(initialDespoit, 'ether');
-        const contract = await deployContract(web3, accounts[0], initialDespoitWei);
-        setCreatedAccountAddress(contract.options.address);
+        const accountAddress = await createAccount(web3, bankAccountFactoryAddress, accounts[0], initialDespoitWei);
+        setCreatedAccountAddress(accountAddress);
       }
     } catch (ex) {
       setErrorMessage("Details from provider: " + ex.message);
@@ -43,6 +49,7 @@ const Home: NextPage<HasEthereumProviderProps> = ({
     ethereumProviderStatus === EthereumProviderStatus.Yes;
   return (
     <Layout ethereumProviderStatus={ethereumProviderStatus}>
+      <h2>Using factory address: {bankAccountFactoryAddress}</h2>
       <h1>Bank Account</h1>
       <p>
         The bank account example is a simple smart contract to which you can
@@ -121,5 +128,13 @@ const Home: NextPage<HasEthereumProviderProps> = ({
     </Layout>
   );
 };
+
+export async function getStaticProps(context: any) {
+  dotEnv.config();
+  const bankAccountFactoryAddress = process.env.BANK_ACCOUNT_FACTORY_ADDRESS;
+  return {
+    props: { bankAccountFactoryAddress }
+  }
+}
 
 export default Home;
