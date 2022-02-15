@@ -5,7 +5,7 @@ contract BankAccountFactory {
 
     event AccountCreated(address indexed sender, address account);
 
-    function createAccount() public {    
+    function createAccount() payable public {    
         address new_account = address(new BankAccount(msg.sender));
         emit AccountCreated(msg.sender, new_account);
     }
