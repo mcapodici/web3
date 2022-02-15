@@ -2,8 +2,8 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import factoryContractJson from "./BankAccountFactory.json";
 
-function makeFactoryContractObject(web3: Web3, address: string) {
-  return new web3.eth.Contract(factoryContractJson.abi as AbiItem[], address);
+export function makeFactoryContractObject(web3: Web3, factoryContractAddress: string) {
+  return new web3.eth.Contract(factoryContractJson.abi as AbiItem[], factoryContractAddress);
 }
 
 export async function createAccount(web3: Web3, factoryContractAddress: string, ownerAddress: string, initialDespoitWei: string) {

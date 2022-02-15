@@ -6,17 +6,25 @@ import {
   EthereumProviderStatus,
 } from "ethereum/ethereumProvider";
 import { getWeb3WithAccounts } from "ethereum/web3";
-import { createAccount } from "ethereum/contracts/BankAccountFactory";
-import { useState } from "react";
-import dotEnv from 'dotenv';
+import {
+  createAccount,
+  makeFactoryContractObject,
+} from "ethereum/contracts/BankAccountFactory";
+import { useEffect, useState } from "react";
+import dotEnv from "dotenv";
 
 interface INextPageProps extends HasEthereumProviderProps {
   bankAccountFactoryAddress: string;
 }
 
+interface IBankAccountDetails {
+  contractAddress: string;
+  balanceEther: string;
+}
+
 const Home: NextPage<INextPageProps> = ({
   ethereumProviderStatus,
-  bankAccountFactoryAddress
+  bankAccountFactoryAddress,
 }) => {
   const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
@@ -26,6 +34,9 @@ const Home: NextPage<INextPageProps> = ({
   const [createdAccountAddress, setCreatedAccountAddress] = useState<
     string | undefined
   >(undefined);
+  const [bankAccountsDetails, setBankAccountsDetails] = useState<
+    IBankAccountDetails[]
+  >([]);
 
   async function createBankAccount() {
     setCreatingBankAccount(true);
@@ -34,16 +45,68 @@ const Home: NextPage<INextPageProps> = ({
     try {
       const { web3, accounts } = await getWeb3WithAccounts();
       if (web3) {
-        console.log(accounts);
-        const initialDespoitWei = web3.utils.toWei(initialDespoit, 'ether');
-        const accountAddress = await createAccount(web3, bankAccountFactoryAddress, accounts[0], initialDespoitWei);
+        const initialDespoitWei = web3.utils.toWei(initialDespoit, "ether");
+        const accountAddress = await createAccount(
+          web3,
+          bankAccountFactoryAddress,
+          accounts[0],
+          initialDespoitWei
+        );
         setCreatedAccountAddress(accountAddress);
       }
     } catch (ex) {
       setErrorMessage("Details from provider: " + ex.message);
     }
     setCreatingBankAccount(false);
+    getExistingAccounts();
   }
+
+  async function getExistingAccounts() {
+    const { web3, accounts } = await getWeb3WithAccounts();
+    if (web3) {
+      try {
+        const factoryContract = makeFactoryContractObject(
+          web3,
+          bankAccountFactoryAddress
+        );
+        const events = await factoryContract.getPastEvents("AccountCreated", {
+          filter: { sender: [accounts[0]] },
+          fromBlock: 1,
+        });
+
+        const bankAccountsDetails: IBankAccountDetails[] = events.map((ev) => ({
+          contractAddress: ev.returnValues.account,
+          balanceEther: "",
+        }));
+        setBankAccountsDetails(bankAccountsDetails);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+
+  useEffect(() => {
+    getExistingAccounts();
+  }, [ethereumProviderStatus]);
+
+  const bankAccountsTables = bankAccountsDetails.map((account) => (
+    <Table.Row key={account.contractAddress}>
+      <Table.Cell>
+        <span title={account.contractAddress}>
+         {account.contractAddress.substr(0,10)}...{account.contractAddress.substring(34)}
+        </span>
+      </Table.Cell>
+      <Table.Cell>{account.balanceEther}</Table.Cell>
+      <Table.Cell>
+        <Button disabled={!interactionAllowed} primary>
+          Deposit
+        </Button>
+        <Button disabled={!interactionAllowed} primary>
+          Withdraw
+        </Button>
+      </Table.Cell>
+    </Table.Row>
+  ));
 
   const interactionAllowed =
     ethereumProviderStatus === EthereumProviderStatus.Yes;
@@ -57,7 +120,8 @@ const Home: NextPage<INextPageProps> = ({
         contract. Anyone can deposit Ether.
       </p>
       <p>
-        Note that this is using the contract factory deployed to <code>{bankAccountFactoryAddress}</code>
+        Note that this is using the contract factory deployed to{" "}
+        <code>{bankAccountFactoryAddress}</code>
       </p>
       <h2>Your bank accounts</h2>
       <p>
@@ -73,20 +137,7 @@ const Home: NextPage<INextPageProps> = ({
           </Table.Row>
         </Table.Header>
 
-        <Table.Body>
-          <Table.Row>
-            <Table.Cell>0x0883</Table.Cell>
-            <Table.Cell>0.01</Table.Cell>
-            <Table.Cell>
-              <Button disabled={!interactionAllowed} primary>
-                Deposit
-              </Button>
-              <Button disabled={!interactionAllowed} primary>
-                Withdraw
-              </Button>
-            </Table.Cell>
-          </Table.Row>
-        </Table.Body>
+        <Table.Body>{bankAccountsTables}</Table.Body>
       </Table>
       <h2>Create bank accounts</h2>
       <p>
@@ -118,7 +169,8 @@ const Home: NextPage<INextPageProps> = ({
           error
         />
         {createdAccountAddress && (
-          <Message positive
+          <Message
+            positive
             onDismiss={() => {
               setCreatedAccountAddress(undefined);
             }}
@@ -135,8 +187,8 @@ export async function getStaticProps(context: any) {
   dotEnv.config();
   const bankAccountFactoryAddress = process.env.BANK_ACCOUNT_FACTORY_ADDRESS;
   return {
-    props: { bankAccountFactoryAddress }
-  }
+    props: { bankAccountFactoryAddress },
+  };
 }
 
 export default Home;
