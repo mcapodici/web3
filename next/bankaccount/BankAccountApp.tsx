@@ -6,6 +6,7 @@ import { Table, Form, Button, Input, Message } from 'semantic-ui-react';
 import Layout from 'sitewide/Layout';
 import ShortAddressWithLink from 'sitewide/ShortAddressWithLink';
 import { Web3Props } from 'sitewide/RequireWeb3Wrapper';
+import Description from './Description';
 
 interface IBankAccountDetails {
   contractAddress: string;
@@ -134,13 +135,7 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
   const interactionAllowed = true; // TODO Solve this!
   return (
     <Layout>
-      <h1>Bank Account</h1>
-      <p>
-        The bank account example is a simple smart contract to which you can
-        deposit and withdraw Ether. A contract is deployed per bank account,
-        and that bank account will only allow withdrawals to the creator of
-        the contract. Anyone can deposit Ether.
-      </p>
+      <Description />
       <p>
         Note that this is using the contract factory deployed to{" "}
         <ShortAddressWithLink address={bankAccountFactoryAddress} />
