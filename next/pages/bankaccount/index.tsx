@@ -2,11 +2,11 @@ import { useEffect, useState, useContext } from "react";
 import type { NextPage } from "next";
 import Layout from "sitewide/Layout";
 import { Form, Input, Button, Table, Message } from "semantic-ui-react";
+import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import {
   createAccount,
   makeFactoryContractObject,
 } from "ethereum/contracts/BankAccountFactory";
-
 import siteWideData from "sitewide/SiteWideData.json";
 import { Context } from "sitewide/Context";
 
@@ -32,13 +32,13 @@ const Home: NextPage = () => {
   switch (web3Status.type) {
     case "disabled":
       // TODO move away from this hack and figure out neat way to handle 2-modes.
-      useEffect(() => {}, [web3Status]); /// HAAAACK 
+      useEffect(() => {}, [web3Status]); /// HAAAACK
       return <div>This requires web3 blah blah</div>;
 
     case "enabled":
       const web3 = web3Status.web3Ref.current;
       const firstAccount = web3Status.firstAccount;
-      const { addressLinkTemplate, deployedContractAddresses } = siteWideData;
+      const { deployedContractAddresses } = siteWideData;
       const bankAccountFactoryAddress =
         deployedContractAddresses.bankAccountFactoryAddress;
 
@@ -46,20 +46,20 @@ const Home: NextPage = () => {
         setCreatingBankAccount(true);
         setCreatedAccountAddress(undefined);
         setErrorMessage(undefined);
-          try {
-            const initialDespoitWei = web3.utils.toWei(initialDespoit, "ether");
-            const accountAddress = await createAccount(
-              web3,
-              bankAccountFactoryAddress,
-              firstAccount,
-              initialDespoitWei
-            );
-            setCreatedAccountAddress(accountAddress);
-          } catch (ex) {
-            setErrorMessage("Details from provider: " + ex.message);
-          }
-          setCreatingBankAccount(false);
-          getExistingAccounts();
+        try {
+          const initialDespoitWei = web3.utils.toWei(initialDespoit, "ether");
+          const accountAddress = await createAccount(
+            web3,
+            bankAccountFactoryAddress,
+            firstAccount,
+            initialDespoitWei
+          );
+          setCreatedAccountAddress(accountAddress);
+        } catch (ex) {
+          setErrorMessage("Details from provider: " + ex.message);
+        }
+        setCreatingBankAccount(false);
+        getExistingAccounts();
       };
 
       const getExistingAccounts = async () => {
@@ -111,31 +111,21 @@ const Home: NextPage = () => {
       };
 
       const init = async () => {
-          getExistingAccounts();
-          getLatestBalances();
-          startBlockListener();
+        getExistingAccounts();
+        getLatestBalances();
+        startBlockListener();
       };
 
       useEffect(() => {
         if (web3Status.type === "enabled") {
-        init();
+          init();
         }
       }, [web3Status]);
 
       const bankAccountsTables = bankAccountsDetails.map((account) => (
         <Table.Row key={account.contractAddress}>
           <Table.Cell>
-            <a
-              href={addressLinkTemplate.replace(
-                "{address}",
-                account.contractAddress
-              )}
-            >
-              <span title={account.contractAddress}>
-                {account.contractAddress.substr(0, 10)}...
-                {account.contractAddress.substring(34)}
-              </span>
-            </a>
+            <ShortAddressWithLink address={account.contractAddress} />
           </Table.Cell>
           <Table.Cell>
             {account.balanceEther ? (
@@ -167,12 +157,12 @@ const Home: NextPage = () => {
           </p>
           <p>
             Note that this is using the contract factory deployed to{" "}
-            <code>{bankAccountFactoryAddress}</code>
+            <ShortAddressWithLink address={bankAccountFactoryAddress} />
           </p>
           <h2>Your bank accounts</h2>
           <p>
-            Here is a list of bank accounts connected to your current metamask
-            address "XYZ"
+            Here is a list of bank accounts connected to your current address{" "}
+            <ShortAddressWithLink address={firstAccount} />
           </p>
           <Table>
             <Table.Header>
