@@ -10,7 +10,8 @@ The project was created using [next.js](https://nextjs.org/docs/getting-started)
 
 TODO:
 
-* Detect if metamask is offering no acconuts (e.g. password not entered and show message)
+* Discriminate between no plugin vs. locked/ no accounts in no provider message.
+* Add a link to try again.
 * A neater way to display messages
 * Detect if not on Rinkby since I don't want to deploy to all testnets or mainnet
-* Detect when account has been changed on meta mask
+* Detect when account has been changed on meta mask, or any meta-mask changes. It should go into lock status as soon as you log out for example.
