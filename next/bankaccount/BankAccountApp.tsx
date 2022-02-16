@@ -5,18 +5,14 @@ import { createAccount, makeFactoryContractObject } from 'ethereum/contracts/Ban
 import { Table, Form, Button, Input, Message } from 'semantic-ui-react';
 import Layout from 'sitewide/Layout';
 import ShortAddressWithLink from 'sitewide/ShortAddressWithLink';
-
-interface BankAccountAppProps {
-  web3Ref: MutableRefObject<Web3>;
-  firstAccount: string;
-}
+import { Web3Props } from 'sitewide/RequireWeb3Wrapper';
 
 interface IBankAccountDetails {
   contractAddress: string;
   balanceEther: string;
 }
 
-const BankAccountApp = ({web3Ref, firstAccount}: BankAccountAppProps) => {
+const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
   const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
