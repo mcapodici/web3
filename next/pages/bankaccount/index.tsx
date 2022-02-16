@@ -1,6 +1,14 @@
 import type { NextPage } from "next";
 import Layout from "components/Layout";
-import { Form, Input, Button, Table, Message } from "semantic-ui-react";
+import {
+  Form,
+  Input,
+  Button,
+  Table,
+  Message,
+  Dimmer,
+  Loader,
+} from "semantic-ui-react";
 import {
   HasEthereumProviderProps,
   EthereumProviderStatus,
@@ -75,40 +83,44 @@ const Home: NextPage<INextPageProps> = ({
         fromBlock: 1,
       });
 
-      const bankAccountsDetails: IBankAccountDetails[] = events.map((ev) => ({
+      const result: IBankAccountDetails[] = events.map((ev) => ({
         contractAddress: ev.returnValues.account,
         balanceEther: "",
       }));
-      setBankAccountsDetails(bankAccountsDetails);
+      setBankAccountsDetails(result);
     } catch (err) {
       console.error(err);
     }
   }
 
-  async function startBlockListener(web3: Web3) {
+  const startBlockListener = (web3: Web3) => {
     web3.eth.subscribe("newBlockHeaders", (err, result) => {
       if (!err) getLatestBalances(web3);
     });
-  }
+  };
 
-  async function getLatestBalances(web3: Web3) {
-    for (const bankAccountDetails of bankAccountsDetails) {
-      const address = bankAccountDetails.contractAddress;
-      web3.eth.getBalance(address).then((bal) => {
-        setBankAccountsDetails((details) =>
-          details.map((detail) =>
-            detail.contractAddress === address
-              ? { ...detail, balanceEther: web3.utils.fromWei(bal, "ether") }
-              : detail
-          )
-        );
-      });
-    }
-  }
+  const getLatestBalances = (web3: Web3) => {
+    setBankAccountsDetails((details) => {
+      for (const bankAccountDetails of details) {
+        const address = bankAccountDetails.contractAddress;
+        web3.eth.getBalance(address).then((bal) => {
+          setBankAccountsDetails((details) =>
+            details.map((detail) =>
+              detail.contractAddress === address
+                ? { ...detail, balanceEther: web3.utils.fromWei(bal, "ether") }
+                : detail
+            )
+          );
+        });
+      }
+      return details;
+    });
+  };
 
   async function init() {
     const { web3, accounts } = await getWeb3WithAccounts();
     if (web3) {
+      console.log("web3!");
       getExistingAccounts(web3, accounts);
       startBlockListener(web3);
     }
@@ -133,7 +145,10 @@ const Home: NextPage<INextPageProps> = ({
           </span>
         </a>
       </Table.Cell>
-      <Table.Cell>{account.balanceEther}</Table.Cell>
+      <Table.Cell>
+        {account.balanceEther ? account.balanceEther :
+        <div className="ui active inline loader"></div>}
+      </Table.Cell>
       <Table.Cell>
         <Button disabled={!interactionAllowed} primary>
           Deposit
