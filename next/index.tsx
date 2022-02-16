@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import Layout from "components/Layout";
+import Layout from "sitewide/Layout";
 import { Form, Input, Button, Table } from "semantic-ui-react";
 
 const Home: NextPage = () => {

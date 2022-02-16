@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import Layout from '../components/Layout'
+import Layout from 'sitewide/Layout'
 import Link from 'next/link';
 
 const Home: NextPage = () => {

@@ -1,5 +1,6 @@
+import { useEffect, useState, useContext } from "react";
 import type { NextPage } from "next";
-import Layout from "components/Layout";
+import Layout from "sitewide/Layout";
 import {
   Form,
   Input,
@@ -18,13 +19,13 @@ import {
   createAccount,
   makeFactoryContractObject,
 } from "ethereum/contracts/BankAccountFactory";
-import { useEffect, useState } from "react";
+
 import dotEnv from "dotenv";
 import Web3 from "web3";
+import { SiteWideContext } from "sitewide/SiteWideContext";
 
 interface INextPageProps extends HasEthereumProviderProps {
   bankAccountFactoryAddress: string;
-  addressLinkTemplate: string;
 }
 
 interface IBankAccountDetails {
@@ -35,7 +36,6 @@ interface IBankAccountDetails {
 const Home: NextPage<INextPageProps> = ({
   ethereumProviderStatus,
   bankAccountFactoryAddress,
-  addressLinkTemplate,
 }) => {
   const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
@@ -130,6 +130,8 @@ const Home: NextPage<INextPageProps> = ({
     init();
   }, [ethereumProviderStatus]);
 
+  const { addressLinkTemplate } = useContext(SiteWideContext);
+
   const bankAccountsTables = bankAccountsDetails.map((account) => (
     <Table.Row key={account.contractAddress}>
       <Table.Cell>
@@ -146,8 +148,11 @@ const Home: NextPage<INextPageProps> = ({
         </a>
       </Table.Cell>
       <Table.Cell>
-        {account.balanceEther ? account.balanceEther :
-        <div className="ui active inline loader"></div>}
+        {account.balanceEther ? (
+          account.balanceEther
+        ) : (
+          <div className="ui active inline loader"></div>
+        )}
       </Table.Cell>
       <Table.Cell>
         <Button disabled={!interactionAllowed} primary>
