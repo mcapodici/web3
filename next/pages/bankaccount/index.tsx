@@ -112,6 +112,7 @@ const Home: NextPage = () => {
 
       const init = async () => {
           getExistingAccounts();
+          getLatestBalances();
           startBlockListener();
       };
 
