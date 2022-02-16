@@ -13,3 +13,4 @@ TODO:
 * Detect if metamask is offering no acconuts (e.g. password not entered and show message)
 * A neater way to display messages
 * Detect if not on Rinkby since I don't want to deploy to all testnets or mainnet
+* Detect when account has been changed on meta mask
