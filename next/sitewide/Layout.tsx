@@ -1,17 +1,17 @@
-import {
-  HasEthereumProviderProps,
-  EthereumProviderStatus,
-} from "ethereum/ethereumProvider";
-import React from "react";
+import React, { useContext } from "react";
 import { Container, Grid, Icon, Message } from "semantic-ui-react";
+import { Context } from "./Context";
 import Header from "./Header";
 import SideNav from "./Sidenav";
 
-interface Props extends HasEthereumProviderProps {
+interface Props {
   children?: React.ReactNode;
 }
 
 const Layout = (props: Props) => {
+  
+  const { web3Status } = useContext(Context);
+
   return (
     <Container>
       <Header />
@@ -21,7 +21,7 @@ const Layout = (props: Props) => {
             <SideNav />
           </Grid.Column>
           <Grid.Column width={12}>
-            {props.ethereumProviderStatus === EthereumProviderStatus.No && (
+            {web3Status.type === 'disabled' && (
               <Message icon warning>
                 <Icon name="ethereum" />
                 <span>

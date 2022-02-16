@@ -1,23 +1,13 @@
+import detectEthereumProvider from "@metamask/detect-provider";
 import Web3 from "web3";
-import { getEthereumProvider } from "./ethereumProvider";
 
-let web3: Web3 | undefined = undefined;
+async function getWeb3() {
+  const ep: any = await detectEthereumProvider();
 
-let epRequestPromise: Promise<unknown> | undefined;
-
-export async function getWeb3() {
-  if (!web3) {
-    const ep: any = getEthereumProvider();
-
-    if (ep) {
-      if (!epRequestPromise)
-        epRequestPromise = ep.request({ method: "eth_requestAccounts" });
-      await epRequestPromise;
-      web3 = new Web3(ep);
-    }
+  if (ep) {
+    await ep.request({ method: "eth_requestAccounts" });
+    return new Web3(ep);
   }
-
-  return web3;
 }
 
 export async function getWeb3WithAccounts() {
