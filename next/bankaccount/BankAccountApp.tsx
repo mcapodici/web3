@@ -1,7 +1,6 @@
-import Web3 from 'web3';
-import React, { MutableRefObject, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import siteWideData from "sitewide/SiteWideData.json";
-import { createAccount, makeFactoryContractObject } from 'ethereum/contracts/BankAccountFactory';
+import { createAccount, getExistingAccounts } from 'ethereum/contracts/BankAccountFactory';
 import { Table, Form, Button, Input, Message } from 'semantic-ui-react';
 import Layout from 'sitewide/Layout';
 import ShortAddressWithLink from 'sitewide/ShortAddressWithLink';
@@ -14,7 +13,7 @@ interface IBankAccountDetails {
 }
 
 const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
-  const [initialDespoit, setInitialDespoit] = useState("");
+  const [initialDespoitEther, setInitialDespoitEther] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
@@ -36,38 +35,29 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
     setCreatedAccountAddress(undefined);
     setErrorMessage(undefined);
     try {
-      const initialDespoitWei = web3.utils.toWei(initialDespoit, "ether");
       const accountAddress = await createAccount(
         web3,
         bankAccountFactoryAddress,
         firstAccount,
-        initialDespoitWei
+        initialDespoitEther
       );
       setCreatedAccountAddress(accountAddress);
     } catch (ex) {
       setErrorMessage("Details from provider: " + ex.message);
     }
     setCreatingBankAccount(false);
-    getExistingAccounts();
+    getExistingAccountsAndUpdate();
   };
 
-  const getExistingAccounts = async () => {
+  const getExistingAccountsAndUpdate = async () => {
     try {
-      const factoryContract = makeFactoryContractObject(
-        web3,
-        bankAccountFactoryAddress
-      );
-      const events = await factoryContract.getPastEvents("AccountCreated", {
-        filter: { sender: [firstAccount] },
-        fromBlock: 1,
-      });
-
-      const result: IBankAccountDetails[] = events.map((ev) => ({
+      const events = await getExistingAccounts(web3, bankAccountFactoryAddress, firstAccount);
+      setBankAccountsDetails(events.map((ev) => ({
         contractAddress: ev.returnValues.account,
         balanceEther: "",
-      }));
-      setBankAccountsDetails(result);
+      })));
     } catch (err) {
+      // TODO report error
       console.error(err);
     }
   };
@@ -75,6 +65,7 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
   const startBlockListener = () => {
     web3.eth.subscribe("newBlockHeaders", (err, result) => {
       if (!err) getLatestBalances();
+      // TODO report error
     });
   };
 
@@ -100,7 +91,7 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
   };
 
   const init = async () => {
-    getExistingAccounts();
+    getExistingAccountsAndUpdate();
     getLatestBalances();
     startBlockListener();
   };
@@ -166,9 +157,9 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
           <label>Initial Deposit (Ether)</label>
           <Input
             type="number"
-            value={initialDespoit}
+            value={initialDespoitEther}
             onChange={(event) => {
-              setInitialDespoit(event.target.value);
+              setInitialDespoitEther(event.target.value);
             }}
           />
         </Form.Field>
