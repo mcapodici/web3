@@ -7,8 +7,6 @@ import {
   Button,
   Table,
   Message,
-  Dimmer,
-  Loader,
 } from "semantic-ui-react";
 import {
   HasEthereumProviderProps,
@@ -20,23 +18,19 @@ import {
   makeFactoryContractObject,
 } from "ethereum/contracts/BankAccountFactory";
 
-import dotEnv from "dotenv";
 import Web3 from "web3";
-import { SiteWideContext } from "sitewide/SiteWideContext";
-
-interface INextPageProps extends HasEthereumProviderProps {
-  bankAccountFactoryAddress: string;
-}
+import siteWideContext from "sitewide/SiteWideContext.json";
 
 interface IBankAccountDetails {
   contractAddress: string;
   balanceEther: string;
 }
 
-const Home: NextPage<INextPageProps> = ({
+const Home: NextPage<HasEthereumProviderProps> = ({
   ethereumProviderStatus,
-  bankAccountFactoryAddress,
 }) => {
+  const { addressLinkTemplate, deployedContractAddresses } = siteWideContext;
+  const bankAccountFactoryAddress = deployedContractAddresses.bankAccountFactoryAddress;
   const [initialDespoit, setInitialDespoit] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
@@ -120,7 +114,6 @@ const Home: NextPage<INextPageProps> = ({
   async function init() {
     const { web3, accounts } = await getWeb3WithAccounts();
     if (web3) {
-      console.log("web3!");
       getExistingAccounts(web3, accounts);
       startBlockListener(web3);
     }
@@ -130,7 +123,6 @@ const Home: NextPage<INextPageProps> = ({
     init();
   }, [ethereumProviderStatus]);
 
-  const { addressLinkTemplate } = useContext(SiteWideContext);
 
   const bankAccountsTables = bankAccountsDetails.map((account) => (
     <Table.Row key={account.contractAddress}>
@@ -239,14 +231,5 @@ const Home: NextPage<INextPageProps> = ({
     </Layout>
   );
 };
-
-export async function getStaticProps(context: any) {
-  dotEnv.config();
-  const bankAccountFactoryAddress = process.env.BANK_ACCOUNT_FACTORY_ADDRESS;
-  const addressLinkTemplate = process.env.ADDRESS_LINK_TEMPLATE;
-  return {
-    props: { bankAccountFactoryAddress, addressLinkTemplate },
-  };
-}
 
 export default Home;

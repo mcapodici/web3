@@ -1,0 +1,7 @@
+{
+  "addressLinkTemplate": "https://rinkeby.etherscan.io/address/{address}",
+  "ethereumNet": "rinkeby",
+  "deployedContractAddresses": {
+    "bankAccountFactoryAddress": "0xeF17859FEe1a0cfAF78AF70aA21bD47d0780c853"
+  }
+}
