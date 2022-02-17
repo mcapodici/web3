@@ -73,14 +73,17 @@ export async function createAccount(
     web3,
     bankAccountFactoryContractAddress
   );
-  return new Promise<string>((resolve) => {
-    factoryContract.methods
+
+  // Fun with PromiEvents! https://web3js.readthedocs.io/en/v1.2.11/callbacks-promises-events.html#promievent
+  return new Promise<string>((resolve, rej) => {
+    const promise = factoryContract.methods
       .createAccount()
-      .send({ from: ownerAddress, gas: 2000000, value: initialDespoitWei })
-      .on("receipt", (receipt: any) => {
+      .send({ from: ownerAddress, gas: 2000000, value: initialDespoitWei });
+      promise.catch((err: any) => { rej(err) });
+      promise.on("receipt", (receipt: any) => {
         const accountAddress =
           receipt.events.AccountCreated.returnValues.account;
         resolve(accountAddress);
-      });
+      })
   });
 }
