@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import siteWideData from "sitewide/SiteWideData.json";
-import { createAccount, getExistingAccounts } from 'ethereum/contracts/BankAccountFactory';
-import { Table, Form, Button, Input, Message } from 'semantic-ui-react';
-import Layout from 'sitewide/Layout';
-import ShortAddressWithLink from 'sitewide/ShortAddressWithLink';
-import { Web3Props } from 'sitewide/RequireWeb3Wrapper';
-import Description from './Description';
+import {
+  createAccount,
+  getExistingAccounts,
+} from "ethereum/contracts/BankAccountFactory";
+import { Table, Form, Button, Input, Message } from "semantic-ui-react";
+import Layout from "sitewide/Layout";
+import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
+import { Web3Props } from "sitewide/RequireWeb3Wrapper";
+import Description from "./Description";
+import { DepositModal } from "./DepositModal";
 
 interface IBankAccountDetails {
   contractAddress: string;
   balanceEther: string;
 }
 
-const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
+const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
+  const [showDespoitModalAddress, setShowDespoitModalAddress] = useState<
+    string | undefined
+  >();
   const [initialDespoitEther, setInitialDespoitEther] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
@@ -51,11 +58,17 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
 
   const getExistingAccountsAndUpdate = async () => {
     try {
-      const events = await getExistingAccounts(web3, bankAccountFactoryAddress, firstAccount);
-      setBankAccountsDetails(events.map((ev) => ({
-        contractAddress: ev.returnValues.account,
-        balanceEther: "",
-      })));
+      const events = await getExistingAccounts(
+        web3,
+        bankAccountFactoryAddress,
+        firstAccount
+      );
+      setBankAccountsDetails(
+        events.map((ev) => ({
+          contractAddress: ev.returnValues.account,
+          balanceEther: "",
+        }))
+      );
     } catch (err) {
       // TODO report error
       console.error(err);
@@ -97,7 +110,7 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
   };
 
   useEffect(() => {
-      init();
+    init();
   }, []);
 
   const bankAccountsTables = bankAccountsDetails.map((account) => (
@@ -113,17 +126,17 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
         )}
       </Table.Cell>
       <Table.Cell>
-        <Button disabled={!interactionAllowed} primary>
+        <Button
+          primary
+          onClick={() => setShowDespoitModalAddress(account.contractAddress)}
+        >
           Deposit
         </Button>
-        <Button disabled={!interactionAllowed} primary>
-          Withdraw
-        </Button>
+        <Button primary>Withdraw</Button>
       </Table.Cell>
     </Table.Row>
   ));
 
-  const interactionAllowed = true; // TODO Solve this!
   return (
     <Layout>
       <Description />
@@ -149,8 +162,8 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
       </Table>
       <h2>Create bank account</h2>
       <p>
-        You can create a bank account here. The initial deposit can be zero,
-        if you like.
+        You can create a bank account here. The initial deposit can be zero, if
+        you like.
       </p>
       <Form error={!!errorMessage}>
         <Form.Field>
@@ -167,7 +180,6 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
           primary
           loading={creatingBankAccount}
           onClick={createBankAccount}
-          disabled={!interactionAllowed}
         >
           Create Account
         </Button>
@@ -187,8 +199,21 @@ const BankAccountApp = ({web3Ref, firstAccount}: Web3Props) => {
           />
         )}
       </Form>
+      {showDespoitModalAddress && (
+        <DepositModal
+          bankAccountContractAddress={showDespoitModalAddress}
+          web3Ref={web3Ref}
+          firstAccount={firstAccount}
+          onClose={(promise) => {
+            setShowDespoitModalAddress(undefined);
+            promise.then(() => {
+              getLatestBalances();
+            });
+          }}
+        />
+      )}
     </Layout>
   );
-}
+};
 
-export default BankAccountApp
+export default BankAccountApp;
