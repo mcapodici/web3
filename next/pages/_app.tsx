@@ -44,7 +44,9 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
     web3Status,
     alerts,
     addAlert: (alert: Alert) => {
-      setAlerts((als) => [...als, alert]);
+      // Replace alert if id exists too. Useful for error messages (to avoid them stacking in the UI)
+      setAlerts((als) => [...(als.filter((al) => al.uniqueId !== alert.uniqueId)), alert]);
+      window.scrollTo(0, 0);
     },
     dismissAlert: (uniqueId: string) => {
       setAlerts((als) => als.filter((al) => al.uniqueId !== uniqueId));

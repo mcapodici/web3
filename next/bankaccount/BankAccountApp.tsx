@@ -30,9 +30,6 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const [showDespoitWithdrawalModalInfo, setShowDespoitWithDrawalModalInfo] =
     useState<IShowDespoitWithdrawalModalInfo | undefined>();
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(
-    undefined
-  );
   const [bankAccountsDetails, setBankAccountsDetails] = useState<
     IBankAccountDetails[]
   >([]);
@@ -44,7 +41,6 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
 
   const createBankAccount = async (initialDespoitEther: string) => {
     setCreatingBankAccount(true);
-    setErrorMessage(undefined);
     try {
       const accountAddress = await createAccount(
         web3,
@@ -59,7 +55,12 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         uniqueId: accountAddress,
       });
     } catch (ex) {
-      setErrorMessage("Details from provider: " + ex.message);
+      addAlert({
+        content: "Details from provider: " + ex.message,
+        header: "Error occured during account creation",
+        type: AlertType.Negative,
+        uniqueId: 'createBankAccount.error',
+      });
     }
     setCreatingBankAccount(false);
     getExistingAccountsAndUpdate();
@@ -155,7 +156,6 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         you like.
       </p>
       <CreateBankAccountForm
-        errorMessage={errorMessage}
         creatingBankAccount={creatingBankAccount}
         createBankAccount={createBankAccount}
       />
