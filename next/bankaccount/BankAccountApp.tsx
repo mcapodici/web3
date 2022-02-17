@@ -9,17 +9,21 @@ import Layout from "sitewide/Layout";
 import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import Description from "./Description";
-import { DepositModal } from "./DepositModal";
+import { DepositWithdrawModal } from "./DepositWithdrawModal";
 
 interface IBankAccountDetails {
   contractAddress: string;
   balanceEther: string;
 }
 
+interface IShowDespoitWithdrawalModalInfo {
+  contractAddress: string;
+  isDeposit: boolean;
+}
+
 const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
-  const [showDespoitModalAddress, setShowDespoitModalAddress] = useState<
-    string | undefined
-  >();
+  const [showDespoitWithdrawalModalInfo, setShowDespoitWithDrawalModalInfo] =
+    useState<IShowDespoitWithdrawalModalInfo | undefined>();
   const [initialDespoitEther, setInitialDespoitEther] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
@@ -128,11 +132,26 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
       <Table.Cell>
         <Button
           primary
-          onClick={() => setShowDespoitModalAddress(account.contractAddress)}
+          onClick={() =>
+            setShowDespoitWithDrawalModalInfo({
+              contractAddress: account.contractAddress,
+              isDeposit: true,
+            })
+          }
         >
           Deposit
         </Button>
-        <Button primary>Withdraw</Button>
+        <Button
+          primary
+          onClick={() =>
+            setShowDespoitWithDrawalModalInfo({
+              contractAddress: account.contractAddress,
+              isDeposit: false,
+            })
+          }
+        >
+          Withdraw
+        </Button>
       </Table.Cell>
     </Table.Row>
   ));
@@ -199,16 +218,16 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
           />
         )}
       </Form>
-      {showDespoitModalAddress && (
-        <DepositModal
-          bankAccountContractAddress={showDespoitModalAddress}
+      {showDespoitWithdrawalModalInfo && (
+        <DepositWithdrawModal
+          isDeposit={showDespoitWithdrawalModalInfo.isDeposit}
+          bankAccountContractAddress={
+            showDespoitWithdrawalModalInfo.contractAddress
+          }
           web3Ref={web3Ref}
           firstAccount={firstAccount}
-          onClose={(promise) => {
-            setShowDespoitModalAddress(undefined);
-            promise.then(() => {
-              getLatestBalances();
-            });
+          onClose={(promise: Promise<boolean>) => {
+            setShowDespoitWithDrawalModalInfo(undefined);
           }}
         />
       )}
