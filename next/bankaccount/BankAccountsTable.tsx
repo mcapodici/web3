@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, Table } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Button, Pagination, Table } from "semantic-ui-react";
 import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 
 export interface IBankAccountDetails {
@@ -13,12 +13,24 @@ export interface BankAccountsTableProps {
   onWithdrawClicked: (address: string) => void;
 }
 
+const pageSize = 10;
+
 const BankAccountsTable = ({
   bankAccountsDetails,
   onDepositClicked,
   onWithdrawClicked,
 }: BankAccountsTableProps) => {
-  const bankAccountsTables = bankAccountsDetails.map((account) => (
+
+  const [page, setPage] = useState(0);
+
+  if (bankAccountsDetails.length === 0) {
+    return <></>;
+  }
+
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize - 1;
+
+  const bankAccountsTables = bankAccountsDetails.slice(startIndex, endIndex) .map((account) => (
     <Table.Row key={account.contractAddress}>
       <Table.Cell>
         <ShortAddressWithLink address={account.contractAddress} />
@@ -47,18 +59,33 @@ const BankAccountsTable = ({
     </Table.Row>
   ));
 
-  return (
-    <Table>
-      <Table.Header>
-        <Table.Row>
-          <Table.Cell>Contract Address</Table.Cell>
-          <Table.Cell>Balance (Ether)</Table.Cell>
-          <Table.Cell>Actions</Table.Cell>
-        </Table.Row>
-      </Table.Header>
+  const numPages = Math.floor((bankAccountsDetails.length - 1) / pageSize) + 1;
 
-      <Table.Body>{bankAccountsTables}</Table.Body>
-    </Table>
+  console.log(numPages);
+  return (
+    <>
+      <Pagination
+        boundaryRange={0}
+        defaultActivePage={1}
+        ellipsisItem={null}
+        firstItem={null}
+        lastItem={null}
+        siblingRange={1}
+        totalPages={numPages}
+        onPageChange={(_, {activePage}) => {setPage(Number(activePage))}}
+      />
+      <Table>
+        <Table.Header>
+          <Table.Row>
+            <Table.Cell>Contract Address</Table.Cell>
+            <Table.Cell>Balance (Ether)</Table.Cell>
+            <Table.Cell>Actions</Table.Cell>
+          </Table.Row>
+        </Table.Header>
+
+        <Table.Body>{bankAccountsTables}</Table.Body>
+      </Table>
+    </>
   );
 };
 

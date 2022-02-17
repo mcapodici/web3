@@ -130,7 +130,16 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         Note that this is using the contract factory deployed to{" "}
         <ShortAddressWithLink address={bankAccountFactoryAddress} />
       </p>
-      <h2>Your bank accounts</h2>
+      <h2>Create bank account</h2>
+      <p>
+        You can create a bank account here. The initial deposit can be zero, if
+        you like.
+      </p>
+      <CreateBankAccountForm
+        creatingBankAccount={creatingBankAccount}
+        createBankAccount={createBankAccount}
+      />
+      <h2>Existing accounts</h2>
       <p>
         Here is a list of bank accounts connected to your current address{" "}
         <ShortAddressWithLink address={firstAccount} />
@@ -149,15 +158,6 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
             isDeposit: false,
           })
         }
-      />
-      <h2>Create bank account</h2>
-      <p>
-        You can create a bank account here. The initial deposit can be zero, if
-        you like.
-      </p>
-      <CreateBankAccountForm
-        creatingBankAccount={creatingBankAccount}
-        createBankAccount={createBankAccount}
       />
       {showDespoitWithdrawalModalInfo && (
         <DepositWithdrawModal
