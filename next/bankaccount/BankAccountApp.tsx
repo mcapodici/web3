@@ -4,12 +4,14 @@ import {
   createAccount,
   getExistingAccounts,
 } from "ethereum/contracts/BankAccountFactory";
-import { Table, Form, Button, Input, Message } from "semantic-ui-react";
+import { Form, Button, Input, Message } from "semantic-ui-react";
 import Layout from "sitewide/Layout";
 import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import Description from "./Description";
 import { DepositWithdrawModal } from "./DepositWithdrawModal";
+import { BankAccountsTable } from "./BankAccountsTable";
+import { CreateBankAccountForm } from "./CreateBankAccountForm";
 
 interface IBankAccountDetails {
   contractAddress: string;
@@ -24,7 +26,6 @@ interface IShowDespoitWithdrawalModalInfo {
 const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const [showDespoitWithdrawalModalInfo, setShowDespoitWithDrawalModalInfo] =
     useState<IShowDespoitWithdrawalModalInfo | undefined>();
-  const [initialDespoitEther, setInitialDespoitEther] = useState("");
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
@@ -41,7 +42,7 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const bankAccountFactoryAddress =
     deployedContractAddresses.bankAccountFactoryAddress;
 
-  const createBankAccount = async () => {
+  const createBankAccount = async (initialDespoitEther: string) => {
     setCreatingBankAccount(true);
     setCreatedAccountAddress(undefined);
     setErrorMessage(undefined);
@@ -117,45 +118,6 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
     init();
   }, []);
 
-  const bankAccountsTables = bankAccountsDetails.map((account) => (
-    <Table.Row key={account.contractAddress}>
-      <Table.Cell>
-        <ShortAddressWithLink address={account.contractAddress} />
-      </Table.Cell>
-      <Table.Cell>
-        {account.balanceEther ? (
-          account.balanceEther
-        ) : (
-          <div className="ui active inline loader"></div>
-        )}
-      </Table.Cell>
-      <Table.Cell>
-        <Button
-          primary
-          onClick={() =>
-            setShowDespoitWithDrawalModalInfo({
-              contractAddress: account.contractAddress,
-              isDeposit: true,
-            })
-          }
-        >
-          Deposit
-        </Button>
-        <Button
-          primary
-          onClick={() =>
-            setShowDespoitWithDrawalModalInfo({
-              contractAddress: account.contractAddress,
-              isDeposit: false,
-            })
-          }
-        >
-          Withdraw
-        </Button>
-      </Table.Cell>
-    </Table.Row>
-  ));
-
   return (
     <Layout>
       <Description />
@@ -168,56 +130,32 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         Here is a list of bank accounts connected to your current address{" "}
         <ShortAddressWithLink address={firstAccount} />
       </p>
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.Cell>Contract Address</Table.Cell>
-            <Table.Cell>Balance (Ether)</Table.Cell>
-            <Table.Cell>Actions</Table.Cell>
-          </Table.Row>
-        </Table.Header>
-
-        <Table.Body>{bankAccountsTables}</Table.Body>
-      </Table>
+      <BankAccountsTable
+        bankAccountsDetails={bankAccountsDetails}
+        onDepositClicked={(address) =>
+          setShowDespoitWithDrawalModalInfo({
+            contractAddress: address,
+            isDeposit: true,
+          })
+        }
+        onWithdrawClicked={(address) =>
+          setShowDespoitWithDrawalModalInfo({
+            contractAddress: address,
+            isDeposit: false,
+          })
+        }
+      />
       <h2>Create bank account</h2>
       <p>
         You can create a bank account here. The initial deposit can be zero, if
         you like.
       </p>
-      <Form error={!!errorMessage}>
-        <Form.Field>
-          <label>Initial Deposit (Ether)</label>
-          <Input
-            type="number"
-            value={initialDespoitEther}
-            onChange={(event) => {
-              setInitialDespoitEther(event.target.value);
-            }}
-          />
-        </Form.Field>
-        <Button
-          primary
-          loading={creatingBankAccount}
-          onClick={createBankAccount}
-        >
-          Create Account
-        </Button>
-        <Message
-          header="Error occured during account creation"
-          content={errorMessage}
-          error
-        />
-        {createdAccountAddress && (
-          <Message
-            positive
-            onDismiss={() => {
-              setCreatedAccountAddress(undefined);
-            }}
-            header="Account Created"
-            content={`Your bank account has been created. The contract address is ${createdAccountAddress}. It should appear soon in the bank account list above.`}
-          />
-        )}
-      </Form>
+      <CreateBankAccountForm 
+          errorMessage={errorMessage}
+          creatingBankAccount={creatingBankAccount}
+          createBankAccount={createBankAccount}
+          createdAccountAddress={createdAccountAddress}
+      />
       {showDespoitWithdrawalModalInfo && (
         <DepositWithdrawModal
           isDeposit={showDespoitWithdrawalModalInfo.isDeposit}
