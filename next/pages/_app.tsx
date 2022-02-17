@@ -5,6 +5,7 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import { Context, Web3Status } from "sitewide/Context";
 import { getWeb3WithAccounts } from "ethereum/web3";
 import Web3 from "web3";
+import { Alert } from "sitewide/alerts/AlertPanel";
 
 interface MyAppProps {}
 
@@ -12,6 +13,7 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
   const web3Ref = useRef<Web3>();
   const [firstAccount, setFirstAccount] = useState("");
   const [web3Enabled, setWeb3Enabled] = useState(false);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
   async function web3init() {
     const { web3, accounts } = await getWeb3WithAccounts();
@@ -31,16 +33,27 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
   }, []);
 
   const web3Status: Web3Status = web3Enabled
-    ? { type: "enabled", web3Ref: (web3Ref as MutableRefObject<Web3>), firstAccount }
+    ? {
+        type: "enabled",
+        web3Ref: web3Ref as MutableRefObject<Web3>,
+        firstAccount,
+      }
     : { type: "disabled" };
 
-  const providerValue = { web3Status };
+  const providerValue = {
+    web3Status,
+    alerts,
+    addAlert: (alert: Alert) => {
+      setAlerts((als) => [...als, alert]);
+    },
+    dismissAlert: (uniqueId: string) => {
+      setAlerts((als) => als.filter((al) => al.uniqueId !== uniqueId));
+    },
+  };
 
   return (
     <Context.Provider value={providerValue}>
-      <Component
-        {...pageProps}
-      />
+      <Component {...pageProps} />
     </Context.Provider>
   );
 }

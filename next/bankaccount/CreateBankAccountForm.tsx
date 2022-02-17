@@ -5,14 +5,12 @@ interface CreateBankAccountFormProps {
   errorMessage: string | undefined;
   creatingBankAccount: boolean;
   createBankAccount: (initialDespoitEther: string) => void;
-  createdAccountAddress: string | undefined;
 }
 
 const CreateBankAccountForm = ({
   errorMessage,
   creatingBankAccount,
   createBankAccount,
-  createdAccountAddress
 }: CreateBankAccountFormProps) => {
   const [initialDespoitEther, setInitialDespoitEther] = useState("");
 
@@ -36,13 +34,6 @@ const CreateBankAccountForm = ({
         content={errorMessage}
         error
       />
-      {createdAccountAddress && (
-        <Message
-          positive
-          header="Account Created"
-          content={`Your bank account has been created. The contract address is ${createdAccountAddress}. It should appear soon in the bank account list above.`}
-        />
-      )}
     </Form>
   );
 };

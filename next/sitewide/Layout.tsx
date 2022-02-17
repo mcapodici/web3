@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { Container, Grid, Icon, Message } from "semantic-ui-react";
+import { AlertPanel } from "./alerts/AlertPanel";
 import { Context } from "./Context";
 import Header from "./Header";
 import SideNav from "./Sidenav";
@@ -8,10 +9,9 @@ interface Props {
   children?: React.ReactNode;
 }
 
-const Layout = (props: Props) => {
-  
-  const { web3Status } = useContext(Context);
+const Layout = (props: Props) => {  
 
+  const {alerts, dismissAlert} = useContext(Context);
   return (
     <Container>
       <Header />
@@ -21,6 +21,7 @@ const Layout = (props: Props) => {
             <SideNav />
           </Grid.Column>
           <Grid.Column width={12}>
+            <AlertPanel alerts={alerts} onDismiss={dismissAlert} />
             {props.children}
           </Grid.Column>
         </Grid.Row>

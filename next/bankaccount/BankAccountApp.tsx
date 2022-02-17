@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import siteWideData from "sitewide/SiteWideData.json";
 import {
   createAccount,
@@ -12,6 +12,8 @@ import Description from "./Description";
 import { DepositWithdrawModal } from "./DepositWithdrawModal";
 import { BankAccountsTable } from "./BankAccountsTable";
 import { CreateBankAccountForm } from "./CreateBankAccountForm";
+import { Context } from "sitewide/Context";
+import { AlertType } from "sitewide/alerts/AlertPanel";
 
 interface IBankAccountDetails {
   contractAddress: string;
@@ -24,15 +26,13 @@ interface IShowDespoitWithdrawalModalInfo {
 }
 
 const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
+  const { addAlert } = useContext(Context);
   const [showDespoitWithdrawalModalInfo, setShowDespoitWithDrawalModalInfo] =
     useState<IShowDespoitWithdrawalModalInfo | undefined>();
   const [creatingBankAccount, setCreatingBankAccount] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   );
-  const [createdAccountAddress, setCreatedAccountAddress] = useState<
-    string | undefined
-  >(undefined);
   const [bankAccountsDetails, setBankAccountsDetails] = useState<
     IBankAccountDetails[]
   >([]);
@@ -44,7 +44,6 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
 
   const createBankAccount = async (initialDespoitEther: string) => {
     setCreatingBankAccount(true);
-    setCreatedAccountAddress(undefined);
     setErrorMessage(undefined);
     try {
       const accountAddress = await createAccount(
@@ -53,7 +52,12 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         firstAccount,
         initialDespoitEther
       );
-      setCreatedAccountAddress(accountAddress);
+      addAlert({
+        content: `Your bank account has been created. The contract address is ${accountAddress}. It should appear soon in the bank account list above.`,
+        header: "Account Created",
+        type: AlertType.Positive,
+        uniqueId: accountAddress,
+      });
     } catch (ex) {
       setErrorMessage("Details from provider: " + ex.message);
     }
@@ -150,11 +154,10 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         You can create a bank account here. The initial deposit can be zero, if
         you like.
       </p>
-      <CreateBankAccountForm 
-          errorMessage={errorMessage}
-          creatingBankAccount={creatingBankAccount}
-          createBankAccount={createBankAccount}
-          createdAccountAddress={createdAccountAddress}
+      <CreateBankAccountForm
+        errorMessage={errorMessage}
+        creatingBankAccount={creatingBankAccount}
+        createBankAccount={createBankAccount}
       />
       {showDespoitWithdrawalModalInfo && (
         <DepositWithdrawModal
