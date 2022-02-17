@@ -139,12 +139,8 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         creatingBankAccount={creatingBankAccount}
         createBankAccount={createBankAccount}
       />
-      <h2>Existing accounts</h2>
-      <p>
-        Here is a list of bank accounts connected to your current address{" "}
-        <ShortAddressWithLink address={firstAccount} />
-      </p>
       <BankAccountsTable
+        forAccount={firstAccount}
         bankAccountsDetails={bankAccountsDetails}
         onDepositClicked={(address) =>
           setShowDespoitWithDrawalModalInfo({

@@ -11,6 +11,7 @@ export interface BankAccountsTableProps {
   bankAccountsDetails: IBankAccountDetails[];
   onDepositClicked: (address: string) => void;
   onWithdrawClicked: (address: string) => void;
+  forAccount: string
 }
 
 const pageSize = 10;
@@ -19,8 +20,8 @@ const BankAccountsTable = ({
   bankAccountsDetails,
   onDepositClicked,
   onWithdrawClicked,
+  forAccount: firstAccount
 }: BankAccountsTableProps) => {
-
   const [page, setPage] = useState(0);
 
   if (bankAccountsDetails.length === 0) {
@@ -30,50 +31,60 @@ const BankAccountsTable = ({
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize - 1;
 
-  const bankAccountsTables = bankAccountsDetails.slice(startIndex, endIndex) .map((account) => (
-    <Table.Row key={account.contractAddress}>
-      <Table.Cell>
-        <ShortAddressWithLink address={account.contractAddress} />
-      </Table.Cell>
-      <Table.Cell>
-        {account.balanceEther ? (
-          account.balanceEther
-        ) : (
-          <div className="ui active inline loader"></div>
-        )}
-      </Table.Cell>
-      <Table.Cell>
-        <Button
-          primary
-          onClick={() => onDepositClicked(account.contractAddress)}
-        >
-          Deposit
-        </Button>
-        <Button
-          primary
-          onClick={() => onWithdrawClicked(account.contractAddress)}
-        >
-          Withdraw
-        </Button>
-      </Table.Cell>
-    </Table.Row>
-  ));
+  const bankAccountsTables = bankAccountsDetails
+    .slice(startIndex, endIndex)
+    .map((account) => (
+      <Table.Row key={account.contractAddress}>
+        <Table.Cell>
+          <ShortAddressWithLink address={account.contractAddress} />
+        </Table.Cell>
+        <Table.Cell>
+          {account.balanceEther ? (
+            account.balanceEther
+          ) : (
+            <div className="ui active inline loader"></div>
+          )}
+        </Table.Cell>
+        <Table.Cell>
+          <Button
+            primary
+            onClick={() => onDepositClicked(account.contractAddress)}
+          >
+            Deposit
+          </Button>
+          <Button
+            primary
+            onClick={() => onWithdrawClicked(account.contractAddress)}
+          >
+            Withdraw
+          </Button>
+        </Table.Cell>
+      </Table.Row>
+    ));
 
   const numPages = Math.floor((bankAccountsDetails.length - 1) / pageSize) + 1;
 
-  console.log(numPages);
   return (
     <>
-      <Pagination
-        boundaryRange={0}
-        defaultActivePage={1}
-        ellipsisItem={null}
-        firstItem={null}
-        lastItem={null}
-        siblingRange={1}
-        totalPages={numPages}
-        onPageChange={(_, {activePage}) => {setPage(Number(activePage))}}
-      />
+      <h2>Existing accounts</h2>
+      <p>
+        Here is a list of bank accounts connected to your current address{" "}
+        <ShortAddressWithLink address={firstAccount} />
+      </p>
+      {numPages > 1 && (
+        <Pagination
+          boundaryRange={0}
+          defaultActivePage={1}
+          ellipsisItem={null}
+          firstItem={null}
+          lastItem={null}
+          siblingRange={1}
+          totalPages={numPages}
+          onPageChange={(_, { activePage }) => {
+            setPage(Number(activePage));
+          }}
+        />
+      )}
       <Table>
         <Table.Header>
           <Table.Row>
