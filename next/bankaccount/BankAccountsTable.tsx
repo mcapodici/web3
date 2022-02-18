@@ -68,8 +68,8 @@ const BankAccountsTable = ({
     <>
       <h2>Existing accounts</h2>
       <p>
-        Here is a list of bank accounts connected to your current address{" "}
-        <ShortAddressWithLink address={firstAccount} />
+        Bank accounts for address{" "}
+        <ShortAddressWithLink address={firstAccount} />:
       </p>
       {numPages > 1 && (
         <Pagination
