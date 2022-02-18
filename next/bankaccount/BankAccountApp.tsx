@@ -121,7 +121,7 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
 
   useEffect(() => {
     init();
-  }, []);
+  }, [firstAccount]);
 
   return (
     <Layout>

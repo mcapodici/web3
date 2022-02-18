@@ -3,6 +3,7 @@ import { Container, Grid, Icon, Message } from "semantic-ui-react";
 import { AlertPanel } from "./alerts/AlertPanel";
 import { Context } from "./Context";
 import Header from "./Header";
+import ShortAddressWithLink from "./ShortAddressWithLink";
 import SideNav from "./Sidenav";
 
 interface Props {

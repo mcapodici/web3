@@ -1,10 +1,19 @@
-import React from "react";
-import { Menu } from "semantic-ui-react";
+import React, { useContext } from "react";
+import { Icon, Menu } from "semantic-ui-react";
 import Link from "next/link";
+import ShortAddressWithLink from "./ShortAddressWithLink";
+import { Context } from "./Context";
 
 const SideNav = () => {
+  const {web3Status} = useContext(Context);
   return (
     <Menu vertical>
+    <Menu.Item>
+        {web3Status.type === 'enabled' ?
+          <><h3 style={{color:'darkgreen'}}><Icon name='ethereum' size='large' style={{marginTop:'-4px'}}/>Connected</h3>
+          <p>Address: <ShortAddressWithLink address={web3Status.firstAccount} /></p></> :
+          <h3 style={{color:'grey'}}><Icon name='ethereum' size='large' style={{marginTop:'-4px'}} />Not Connected</h3> }
+    </Menu.Item>
       <Menu.Item>
         Basic Examples
         <Menu.Menu>
