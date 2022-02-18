@@ -2,7 +2,7 @@
 
 Web 3 is my collection of examples where a website connects to the Ethereum network.
 
-You can see this live here: https://web3-mcapodici.vercel.app.
+You can see this live here: https://web3-mcapodici.vercel.app._
 
 ## Notes
 
