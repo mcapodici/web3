@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import siteWideData from "sitewide/SiteWideData.json";
 import {
   createAccount,
   getExistingAccounts,
 } from "ethereum/contracts/BankAccountFactory";
-import { Form, Button, Input, Message } from "semantic-ui-react";
 import Layout from "sitewide/Layout";
 import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
@@ -35,6 +34,7 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
   >([]);
 
   const web3 = web3Ref.current;
+  const subscriptionsRef = useRef<any[]>([]);
   const { deployedContractAddresses } = siteWideData;
   const bankAccountFactoryAddress =
     deployedContractAddresses.bankAccountFactoryAddress;
@@ -86,10 +86,10 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
   };
 
   const startBlockListener = () => {
-    web3.eth.subscribe("newBlockHeaders", (err, result) => {
+    subscriptionsRef.current.push(web3.eth.subscribe("newBlockHeaders", (err, result) => {
       if (!err) getLatestBalances();
       // TODO report error
-    });
+    }));
   };
 
   const getLatestBalances = () => {
@@ -116,12 +116,19 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const init = async () => {
     getExistingAccountsAndUpdate();
     getLatestBalances();
-    startBlockListener();
   };
 
   useEffect(() => {
     init();
   }, [firstAccount]);
+
+  useEffect(() => {
+    startBlockListener();
+    return () => {
+      subscriptionsRef.current.map((s) => s.unsubscribe());
+      subscriptionsRef.current = [];
+    };
+  });
 
   return (
     <Layout>

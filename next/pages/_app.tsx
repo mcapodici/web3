@@ -12,6 +12,7 @@ interface MyAppProps {}
 
 function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
   const web3Ref = useRef<Web3>();
+  const subscriptionsRef = useRef<any[]>([]);
   const [firstAccount, setFirstAccount] = useState("");
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [notConnectedReason, setNotConnectedReason] = useState<
@@ -20,7 +21,6 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
 
   async function web3init(withListeners: boolean) {
     const { web3, accounts } = await getWeb3WithAccounts();
-
 
     if (!web3) {
       setNotConnectedReason(NotConnectedReason.NoProvider);
@@ -41,12 +41,16 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
     if (withListeners) {
       const provider = web3.currentProvider as any; // Any case because there are numerous providers with a union of types provided by web3.
       if (provider.on) {
-        provider.on("accountsChanged", function (accounts: string[]) {
-          web3init(false);
-        });
-        provider.on("networkChanged", function (networkId: number) {
-          web3init(false);
-        });
+        subscriptionsRef.current.push(
+          provider.on("accountsChanged", function (accounts: string[]) {
+            web3init(false);
+          })
+        );
+        subscriptionsRef.current.push(
+          provider.on("networkChanged", function (networkId: number) {
+            web3init(false);
+          })
+        );
       } else {
         // Resort to polling
         setInterval(async function () {
@@ -71,7 +75,11 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
 
   useEffect(() => {
     web3init(true);
-  }, []);
+    return () => {
+      subscriptionsRef.current.map((s) => console.log(s));
+      subscriptionsRef.current = [];
+    };
+  });
 
   const web3Status: Web3Status = firstAccount
     ? {
