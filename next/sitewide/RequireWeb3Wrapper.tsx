@@ -16,8 +16,8 @@ const RequireWeb3Wrapper =
       case "disabled":
         return (
           <Layout>
-            <IfNoWeb3 />
             <EthereumPluginRequiredWarning />
+            <IfNoWeb3 />
           </Layout>
         );
 
