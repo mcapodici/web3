@@ -16,7 +16,7 @@ const Layout = (props: Props) => {
   return (
     <Container>
       <Header />
-      <Grid>
+      <Grid stackable >
         <Grid.Row columns={2}>
           <Grid.Column width={4}>
             <SideNav />
