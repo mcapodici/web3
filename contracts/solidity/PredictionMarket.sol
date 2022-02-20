@@ -22,11 +22,11 @@ contract PredictionMarket {
     }
 
     mapping(address => User) public users;
-    mapping(bytes32 => address) public userNames;
+    mapping(bytes32 => address) public usernames;
 
     function register(bytes32 username, Multihash calldata userinfo) public {
         require(username != 0);
-        require(userNames[username] == address(0));
+        require(usernames[username] == address(0));
         require(users[msg.sender].username == 0);
 
         User memory user;
@@ -34,7 +34,7 @@ contract PredictionMarket {
         user.userinfo = userinfo;
         user.balance = freeBalanceOnRegistration;
         users[msg.sender] = user;
-        userNames[username] = msg.sender;
+        usernames[username] = msg.sender;
 
         emit AccountCreated(username, msg.sender);
     }
