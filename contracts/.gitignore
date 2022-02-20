@@ -36,3 +36,6 @@ yarn-error.log*
 
 # local scripts
 localscripts
+
+# contract building
+cache
