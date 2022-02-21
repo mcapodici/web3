@@ -37,4 +37,13 @@ contract PredictionMarket {
 
         emit AccountCreated(username, msg.sender);
     }
+
+    /// @notice User existing user's info.
+    /// @param userinfoMultihash The multihash for user profile content, using a v0 CID.
+    /// @dev see "register()" dev notes about userinfoMultihash
+    function updateUserInfo(bytes32 userinfoMultihash) public {
+        User storage user = users[msg.sender];
+        require(user.username != 0); // Yes they registered before (otherwise they should use register).
+        user.userinfoMultihash = userinfoMultihash;
+    }
 }
