@@ -4,7 +4,7 @@
   "description": "",
   "main": "deploy.js",
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }'  NODE_OPTIONS=--openssl-legacy-provider TS_NODE_TRANSPILE_ONLY=true mocha -r ts-node/register 'test/**/*.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }'  NODE_OPTIONS=--openssl-legacy-provider TS_NODE_TRANSPILE_ONLY=true mocha --timeout 5000 -r ts-node/register 'test/**/*.ts'",
     "build": "waffle"
   },
   "author": "",
@@ -16,6 +16,7 @@
     "bn.js": "^5.2.0",
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
+    "multiformats": "^9.6.4",
     "solc": "^0.8.11",
     "web3": "^1.7.0"
   },
