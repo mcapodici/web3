@@ -23,8 +23,6 @@ const userinfoMultihash1 = getMultihashForContract(userinfoCID1);
 const userinfoCID2 = CID.parse('QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR');
 const userinfoMultihash2 = getMultihashForContract(userinfoCID2);
 
-console.log(userinfoMultihash1);
-
 describe('PredictionMarket contract', () => {
 
   describe('cid encoding', () => {
@@ -53,7 +51,7 @@ describe('PredictionMarket contract', () => {
 
       const userFromCall = await predictionMarket.users(wallet.address);
       expect(userFromCall.username, 'username').to.equal(username1);
-      expect(userFromCall.balance.toString()).to.equal('10000000000000000000');
+      expect(userFromCall.balance.toString()).to.equal('1000' + '000000000000000000'); // 1000 Tokens
       expect(userFromCall.userinfoMultihash).to.equal(userinfoMultihash1);
 
       const addressFromCall = await predictionMarket.usernames(username1);

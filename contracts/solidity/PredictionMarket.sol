@@ -4,15 +4,24 @@ pragma solidity ^0.8.11;
 contract PredictionMarket {
   
     event AccountCreated(bytes32 indexed username, address originaladdress);
+    event MarketCreated(address indexed useraddress, uint index);
 
     uint constant tokenToBalance = 1000000000000000000; // 18 DP.
-    uint constant freeTokensOnRegistration = 10;
-    uint constant freeBalanceOnRegistration = tokenToBalance * freeTokensOnRegistration;
+    uint constant freeBalanceOnRegistration = tokenToBalance * 1000;
+    uint constant minBalanceForPool = tokenToBalance * 10;
   
     struct User {
       bytes32 username; // Username encoded in ascii maybe?
       uint balance; // Balances are implied 18 decimals
-      bytes32 userinfoMultihash; // Link to find this on IPFS      
+      bytes32 userinfoMultihash; // Link to find this on IPFS
+      uint numberOfMarkets;
+      mapping(uint => Market) markets; // Markets created by this user  
+    }
+
+    struct Market {
+      uint pool;
+      uint8 prob;
+      bytes32 infoMultihash;
     }
 
     mapping(address => User) public users;
@@ -28,11 +37,10 @@ contract PredictionMarket {
         require(usernames[username] == address(0));
         require(users[msg.sender].username == 0);
 
-        User memory user;
+        User storage user = users[msg.sender];
         user.username = username;
         user.userinfoMultihash = userinfoMultihash;
         user.balance = freeBalanceOnRegistration;
-        users[msg.sender] = user;
         usernames[username] = msg.sender;
 
         emit AccountCreated(username, msg.sender);
@@ -46,4 +54,35 @@ contract PredictionMarket {
         require(user.username != 0); // Yes they registered before (otherwise they should use register).
         user.userinfoMultihash = userinfoMultihash;
     }
+
+    /// @notice creates a new market
+    /// @param infoMultihash The multihash for market title and initial description, using a v0 CID.
+    /// @param pool Amount of money to initialise the pool with
+    /// @dev further commentary is handled off contract to be gas-efficient. Unfortunately IPNS seems so slow that it might
+    /// just have to be centralized for now.
+    function createMarket(bytes32 infoMultihash, uint pool, uint8 prob) public {
+        User storage user = users[msg.sender];
+        require(user.username != 0);
+
+        require(pool >= minBalanceForPool);
+        require(prob >= 1 && prob <= 99);
+        require(user.balance >= pool);
+
+        // Set up Market
+        // =============
+        Market memory market;
+
+        // Transaction >>>
+        user.balance -= pool;        
+        market.pool += pool;
+        // <<< Transaction
+        market.prob = prob;
+        market.infoMultihash = infoMultihash;
+
+        user.markets[user.numberOfMarkets] = market;
+        user.numberOfMarkets ++;
+
+        emit MarketCreated(msg.sender, user.numberOfMarkets - 1);
+    }
+
 }
