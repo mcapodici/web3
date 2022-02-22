@@ -55,6 +55,10 @@ contract PredictionMarket {
         user.userinfoMultihash = userinfoMultihash;
     }
 
+    function getMarket(address userAddress, uint index) public view returns (Market memory) {
+      return users[userAddress].markets[index];
+    }
+
     /// @notice creates a new market
     /// @param infoMultihash The multihash for market title and initial description, using a v0 CID.
     /// @param pool Amount of money to initialise the pool with
@@ -74,7 +78,7 @@ contract PredictionMarket {
 
         // Transaction >>>
         user.balance -= pool;        
-        market.pool += pool;
+        market.pool = pool;
         // <<< Transaction
         market.prob = prob;
         market.infoMultihash = infoMultihash;
