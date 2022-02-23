@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
 
+import "prb-math/contracts/PRBMathUD60x18.sol";
+
 contract PredictionMarket {
+    using PRBMathUD60x18  for uint256;
   
     event AccountCreated(bytes32 indexed username, address originaladdress);
     event MarketCreated(address indexed useraddress, uint index);
     event BetMade(address indexed marketCreatorAddress, uint indexed marketIndex, uint betIndex);
 
-    uint constant tokenToBalance = 1000000000000000000; // 18 DP.
+    uint constant tokenToBalance = 1e18; // And this has to match the math library!
     uint constant freeBalanceOnRegistration = tokenToBalance * 1000;
     uint constant minBalanceForPool = tokenToBalance * 10;
     uint constant minBetsize = tokenToBalance * 1;
@@ -123,11 +126,36 @@ contract PredictionMarket {
         Market storage market =  markercreator.markets[marketIndex];
         require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
 
-        uint numberOfShares = 1; // TODO: THE ACTUAL MATH
+        // Shares Calculation >>
+        uint totalPoolSize = market.pool;
+        uint moneyOnOutcome = 0;
+
+        if (outcome == 1) {
+          moneyOnOutcome = market.pool * market.prob / 100;
+        } else {
+          moneyOnOutcome = market.pool * (100 - market.prob) / 100;
+        }
+
+        uint sharesOnNonOutcome = moneyOnOutcome; // arbitarly set the first shares as owned by the pool owner to be the money they put on that outcome
+
+        for (uint i=0; i<market.numberOfBets; i++) {
+          Bet storage betForAgg = market.bets[i];
+          totalPoolSize += betForAgg.betsize;
+
+          if (betForAgg.outcome == outcome) {
+            moneyOnOutcome += betForAgg.betsize;
+          } else {
+            sharesOnNonOutcome += betForAgg.numberOfShares;
+          }
+        }
+
+        // Use log2 instead of ln to save gas, and it just multiplies everyones share by the same factor anyway
+        uint numberOfShares = (betsize.div(moneyOnOutcome) + tokenToBalance).log2().mul(sharesOnNonOutcome); 
 
         Bet memory bet;
 
         bet.useraddress = msg.sender;
+        // << Shares Calculation
 
         // Transaction >>>
         user.balance -= betsize;            

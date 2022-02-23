@@ -192,12 +192,25 @@ describe('PredictionMarket contract', () => {
       const bet = await predictionMarket.getBet(wallet.address, 0, 0);
       expect(bet.useraddress).to.equal(wallet.address);
       expect(bet.betsize).to.equal('10' + '000000000000000000');
-      expect(bet.numberOfShares).to.equal(1); // TODO change with calculation
+      expect(bet.numberOfShares).to.equal('13966410658722218550');
       expect(bet.outcome).to.equal(0);
       const userFromCall = await predictionMarket.users(wallet.address);
       expect(userFromCall.balance.toString()).to.equal('690' + '000000000000000000'); // 690 Tokens left, having put 300 in the pool, and 10 on the bet.
       const market = await predictionMarket.getMarket(wallet.address, 0);
       expect(market.numberOfBets).to.equal(1);
+    });
+
+
+    it('gives you less on the subsequent bets', async () => {
+      await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
+      await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
+      await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
+      const bet1 = await predictionMarket.getBet(wallet.address, 0, 0);
+      const bet2 = await predictionMarket.getBet(wallet.address, 0, 1);
+      const bet3 = await predictionMarket.getBet(wallet.address, 0, 2);
+      expect(bet1.numberOfShares).to.equal('13966410658722218550');
+      expect(bet2.numberOfShares).to.equal('13119426187550909100');
+      expect(bet3.numberOfShares).to.equal('12369324028795941150');
     });
 
     it('unsuccessful for address without user', async () => {
