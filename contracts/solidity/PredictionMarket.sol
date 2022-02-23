@@ -118,7 +118,9 @@ contract PredictionMarket {
         require(user.balance >= betsize);
         require(outcome == 0 || outcome == 1);
 
-        Market storage market =  users[marketCreatorAddress].markets[marketIndex];
+        User storage markercreator = users[marketCreatorAddress];
+        require(markercreator.username != 0);
+        Market storage market =  markercreator.markets[marketIndex];
         require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
 
         uint numberOfShares = 1; // TODO: THE ACTUAL MATH

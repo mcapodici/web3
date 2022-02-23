@@ -119,7 +119,7 @@ describe('PredictionMarket contract', () => {
       predictionMarket = await deployContract(wallet, PredictionMarket, []);
     });
 
-    it('succesful for registered user', async () => {
+    it('successful for registered user', async () => {
       await predictionMarket.register(username1, testCIDMultihash1);
       await predictionMarket.createMarket(testCIDMultihash2, '300' + '000000000000000000', '50');
       const market = await predictionMarket.getMarket(wallet.address, 0);
@@ -146,21 +146,21 @@ describe('PredictionMarket contract', () => {
       expect(userFromCall.balance.toString()).to.equal('950' + '000000000000000000'); // 950 Tokens left, having sent 50 to these pools
     });
 
-    it('unsuccesful for address without user', async () => {
+    it('unsuccessful for address without user', async () => {
       await expect(predictionMarket.createMarket(testCIDMultihash2, '1000' + '000000000000000000', '50')).to.be.reverted;
     });
 
-    it('unsuccesful if pool size is more than their balance', async () => {
+    it('unsuccessful if pool size is more than their balance', async () => {
       await predictionMarket.register(username1, testCIDMultihash1);
       await expect(predictionMarket.createMarket(testCIDMultihash2, '1000' + '000000000000000001', '50')).to.be.reverted;
     });
 
-    it('unsuccesful if pool size is too small', async () => {
+    it('unsuccessful if pool size is too small', async () => {
       await predictionMarket.register(username1, testCIDMultihash1);
       await expect(predictionMarket.createMarket(testCIDMultihash2, '9' + '900000000000000000', '50')).to.be.reverted;
     });
 
-    it('unsuccesful if probability out of range 1 - 99', async () => {
+    it('unsuccessful if probability out of range 1 - 99', async () => {
       await predictionMarket.register(username1, testCIDMultihash1);
       await expect(predictionMarket.createMarket(testCIDMultihash2, '1000' + '000000000000000000', '0')).to.be.reverted;
       await expect(predictionMarket.createMarket(testCIDMultihash2, '1000' + '000000000000000000', '100')).to.be.reverted;
@@ -179,6 +179,7 @@ describe('PredictionMarket contract', () => {
   describe('bet creation', () => {
     const [wallet, wallet2] = new MockProvider().getWallets();
     let predictionMarket: Contract;
+    const marketWalletAddress = wallet.address;
 
     beforeEach(async () => {
       predictionMarket = await deployContract(wallet, PredictionMarket, []);
@@ -186,14 +187,38 @@ describe('PredictionMarket contract', () => {
       await predictionMarket.createMarket(testCIDMultihash2, '300' + '000000000000000000', '50');
     });
 
-    it('works', async () => {
-      await predictionMarket.makeBet(wallet.address, 0, '10' + '000000000000000000', 0);
+    it('successful with correct parameters', async () => {
+      await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
       const bet = await predictionMarket.getBet(wallet.address, 0, 0);
       expect(bet.useraddress).to.equal(wallet.address);
       expect(bet.betsize).to.equal('10' + '000000000000000000');
       expect(bet.numberOfShares).to.equal(1); // TODO change with calculation
       expect(bet.outcome).to.equal(0);
-      console.log(bet);
+    });
+
+    it('unsuccessful for address without user', async () => {
+      const predictionMarketW2 = predictionMarket.connect(wallet2);
+      await expect(predictionMarket.makeBet(marketWalletAddress, 0, '1000' + '000000000000000000', 0)).to.be.reverted;
+    });
+
+    it('unsuccessful if pool size is more than their balance', async () => {
+      await expect(predictionMarket.makeBet(marketWalletAddress, 0, '1000' + '000000000000000001', 0)).to.be.reverted;
+    });
+
+    it('unsuccessful if pool size is too small', async () => {
+      await expect(predictionMarket.makeBet(marketWalletAddress, 0, '9' + '90000000000000000', 0)).to.be.reverted;
+    });
+
+    it('unsuccessful if outcome is out of bounds (should be 0 or 1)', async () => {
+      await expect(predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 2)).to.be.reverted;
+    });
+
+    it('unsuccessful if market user does not exist', async () => {
+      await expect(predictionMarket.makeBet(wallet2.address, 1, '10' + '000000000000000000', 0)).to.be.reverted;
+    });
+
+    it('unsuccessful if market does not exist for legit user', async () => {
+      await expect(predictionMarket.makeBet(marketWalletAddress, 1, '10' + '000000000000000000', 2)).to.be.reverted;
     });
   });
 });
