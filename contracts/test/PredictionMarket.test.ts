@@ -1,5 +1,6 @@
 import { config, expect, use } from 'chai';
 import { Contract } from 'ethers';
+import { BigNumber } from 'ethers';
 import { deployContract, MockProvider, solidity } from 'ethereum-waffle';
 import { utils } from 'ethers';
 import chaiSubset from 'chai-subset';
@@ -211,6 +212,14 @@ describe('PredictionMarket contract', () => {
       expect(bet1.numberOfShares).to.equal('13966410658722218550');
       expect(bet2.numberOfShares).to.equal('13119426187550909100');
       expect(bet3.numberOfShares).to.equal('12369324028795941150');
+    });
+
+    it('passes gas usage regression test', async () => {
+      const before = await wallet.getBalance();
+      await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
+      const after = await wallet.getBalance();
+      const gasEth = before.sub(after);
+      expect(gasEth).to.be.lt(BigNumber.from('400000000000000')); // 0.0004 ETH
     });
 
     it('unsuccessful for address without user', async () => {
