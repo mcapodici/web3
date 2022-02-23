@@ -194,6 +194,10 @@ describe('PredictionMarket contract', () => {
       expect(bet.betsize).to.equal('10' + '000000000000000000');
       expect(bet.numberOfShares).to.equal(1); // TODO change with calculation
       expect(bet.outcome).to.equal(0);
+      const userFromCall = await predictionMarket.users(wallet.address);
+      expect(userFromCall.balance.toString()).to.equal('690' + '000000000000000000'); // 690 Tokens left, having put 300 in the pool, and 10 on the bet.
+      const market = await predictionMarket.getMarket(wallet.address, 0);
+      expect(market.numberOfBets).to.equal(1);
     });
 
     it('unsuccessful for address without user', async () => {
@@ -219,6 +223,15 @@ describe('PredictionMarket contract', () => {
 
     it('unsuccessful if market does not exist for legit user', async () => {
       await expect(predictionMarket.makeBet(marketWalletAddress, 1, '10' + '000000000000000000', 2)).to.be.reverted;
+    });
+
+    it('emits bet created events', async () => {
+      await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
+      const events = await predictionMarket.queryFilter({ topics: [utils.id("BetMade(address,uint256,uint256)")] });
+      expect(events).to.be.length(1);
+      expect(events[0].args.marketCreatorAddress).to.equal(wallet.address);
+      expect(events[0].args.marketIndex).to.equal('0');
+      expect(events[0].args.betIndex).to.equal('0');
     });
   });
 });
