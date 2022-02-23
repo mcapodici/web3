@@ -111,7 +111,6 @@ describe('PredictionMarket contract', () => {
     });
   });
 
-
   describe('market creation', () => {
     const [wallet, wallet2] = new MockProvider().getWallets();
     let predictionMarket: Contract;
@@ -170,10 +169,31 @@ describe('PredictionMarket contract', () => {
     it('emits market created events', async () => {
       await predictionMarket.register(username1, testCIDMultihash1);
       await predictionMarket.createMarket(testCIDMultihash2, '1000' + '000000000000000000', '50');
-      const events = await predictionMarket.queryFilter({topics:[utils.id("MarketCreated(address,uint256)")]});
+      const events = await predictionMarket.queryFilter({ topics: [utils.id("MarketCreated(address,uint256)")] });
       expect(events).to.be.length(1);
       expect(events[0].args.useraddress).to.equal(wallet.address);
       expect(events[0].args.index).to.equal('0');
+    });
+  });
+
+  describe('bet creation', () => {
+    const [wallet, wallet2] = new MockProvider().getWallets();
+    let predictionMarket: Contract;
+
+    beforeEach(async () => {
+      predictionMarket = await deployContract(wallet, PredictionMarket, []);
+      await predictionMarket.register(username1, testCIDMultihash1);
+      await predictionMarket.createMarket(testCIDMultihash2, '300' + '000000000000000000', '50');
+    });
+
+    it('works', async () => {
+      await predictionMarket.makeBet(wallet.address, 0, '10' + '000000000000000000', 0);
+      const bet = await predictionMarket.getBet(wallet.address, 0, 0);
+      expect(bet.useraddress).to.equal(wallet.address);
+      expect(bet.betsize).to.equal('10' + '000000000000000000');
+      expect(bet.numberOfShares).to.equal(1); // TODO change with calculation
+      expect(bet.outcome).to.equal(0);
+      console.log(bet);
     });
   });
 });

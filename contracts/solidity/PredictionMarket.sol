@@ -5,10 +5,12 @@ contract PredictionMarket {
   
     event AccountCreated(bytes32 indexed username, address originaladdress);
     event MarketCreated(address indexed useraddress, uint index);
+    event BetMade(address indexed marketCreatorAddress, uint indexed marketIndex, uint betIndex);
 
     uint constant tokenToBalance = 1000000000000000000; // 18 DP.
     uint constant freeBalanceOnRegistration = tokenToBalance * 1000;
     uint constant minBalanceForPool = tokenToBalance * 10;
+    uint constant minBetsize = tokenToBalance * 1;
   
     struct User {
       bytes32 username; // Username encoded in ascii maybe?
@@ -22,6 +24,15 @@ contract PredictionMarket {
       uint pool;
       uint8 prob;
       bytes32 infoMultihash;
+      uint numberOfBets;
+      mapping(uint => Bet) bets; // Bets placed on this market by any user
+    }
+
+    struct Bet {
+      address useraddress;
+      uint betsize;
+      uint numberOfShares;
+      uint8 outcome;
     }
 
     mapping(address => User) public users;
@@ -55,8 +66,14 @@ contract PredictionMarket {
         user.userinfoMultihash = userinfoMultihash;
     }
 
-    function getMarket(address userAddress, uint index) public view returns (Market memory) {
-      return users[userAddress].markets[index];
+    function getMarket(address userAddress, uint index) public view returns (uint pool, uint8 prob, bytes32 infoMultihash, uint numberOfBets) {
+      Market storage market = users[userAddress].markets[index];
+      return (market.pool, market.prob, market.infoMultihash, market.numberOfBets);
+    }
+
+    function getBet(address userAddress, uint marketIndex, uint betIndex) public view returns (Bet memory) {
+      Bet storage bet = users[userAddress].markets[marketIndex].bets[betIndex];
+      return bet;
     }
 
     /// @notice creates a new market
@@ -74,19 +91,55 @@ contract PredictionMarket {
 
         // Set up Market
         // =============
-        Market memory market;
+        Market storage market = user.markets[user.numberOfMarkets];
+        user.numberOfMarkets ++;
 
         // Transaction >>>
         user.balance -= pool;        
         market.pool = pool;
         // <<< Transaction
+
         market.prob = prob;
         market.infoMultihash = infoMultihash;
 
-        user.markets[user.numberOfMarkets] = market;
-        user.numberOfMarkets ++;
-
         emit MarketCreated(msg.sender, user.numberOfMarkets - 1);
+    }
+
+    /// @notice place a bet on a market
+    /// @param marketCreatorAddress the address of the user who created the market
+    /// @param marketIndex the index of the market for the user who created it
+    /// @param betsize the amount to bet
+    /// @param outcome currently only supports 0 = NO and 1 = YES
+    function makeBet(address marketCreatorAddress, uint marketIndex, uint betsize, uint8 outcome) public {
+        User storage user = users[msg.sender];
+        require(user.username != 0);
+
+        require(betsize >= minBetsize);
+        require(user.balance >= betsize);
+        require(outcome == 0 || outcome == 1);
+
+        Market storage market =  users[marketCreatorAddress].markets[marketIndex];
+        require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
+
+        uint numberOfShares = 1; // TODO: THE ACTUAL MATH
+
+        Bet memory bet;
+
+        bet.useraddress = msg.sender;
+
+        // Transaction >>>
+        user.balance -= betsize;            
+        bet.betsize = betsize;
+        // <<< Transaction
+
+        bet.numberOfShares = numberOfShares;
+        bet.outcome = outcome;
+        bet.useraddress = msg.sender;
+
+        market.bets[market.numberOfBets] = bet;
+        market.numberOfBets ++;
+
+        emit BetMade(marketCreatorAddress, marketIndex, market.numberOfBets - 1);
     }
 
 }
