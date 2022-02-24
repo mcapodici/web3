@@ -218,9 +218,9 @@ describe('PredictionMarket contract', () => {
       RefM.bet(refPool, 'trader', 0, 10);
       RefM.bet(refPool, 'trader', 0, 10);
       RefM.bet(refPool, 'trader', 0, 10);
-      expect(refPool.bets[0].shares).to.be.closeTo(13.9664106587, 0.0000000001);
-      expect(refPool.bets[1].shares).to.be.closeTo(13.1194261875, 0.0000000001);
-      expect(refPool.bets[2].shares).to.be.closeTo(12.3693240287, 0.0000000001);
+      expect(bet1.numberOfShares).to.be.closeTo(Math.floor(refPool.bets[0].shares * 10 ** 18).toString(), 10000);
+      expect(bet2.numberOfShares).to.be.closeTo(Math.floor(refPool.bets[1].shares * 10 ** 18).toString(), 10000);
+      expect(bet3.numberOfShares).to.be.closeTo(Math.floor(refPool.bets[2].shares * 10 ** 18).toString(), 10000);
     });
 
     it('passes gas usage regression test', async () => {
@@ -233,7 +233,7 @@ describe('PredictionMarket contract', () => {
 
     it('unsuccessful for address without user', async () => {
       const predictionMarketW2 = predictionMarket.connect(wallet2);
-      await expect(predictionMarket.makeBet(marketWalletAddress, 0, '1000' + '000000000000000000', 0)).to.be.reverted;
+      await expect(predictionMarket.makeBet(predictionMarketW2, 0, '1000' + '000000000000000000', 0)).to.be.reverted;
     });
 
     it('unsuccessful if pool size is more than their balance', async () => {
