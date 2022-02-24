@@ -5,9 +5,8 @@ import { deployContract, MockProvider, solidity } from 'ethereum-waffle';
 import { utils } from 'ethers';
 import chaiSubset from 'chai-subset';
 import PredictionMarket from '../build/PredictionMarket.json';
-import BN from 'bn.js';
-import { CID, MultihashDigest } from 'multiformats/cid';
-import * as  Digest from 'multiformats/hashes/digest'
+import { CID } from 'multiformats/cid';
+import * as RefM from './ReferenceMarket';
 
 use(chaiSubset);
 use(solidity);
@@ -181,11 +180,13 @@ describe('PredictionMarket contract', () => {
     const [wallet, wallet2] = new MockProvider().getWallets();
     let predictionMarket: Contract;
     const marketWalletAddress = wallet.address;
+    let refPool: RefM.Pool;
 
     beforeEach(async () => {
       predictionMarket = await deployContract(wallet, PredictionMarket, []);
       await predictionMarket.register(username1, testCIDMultihash1);
       await predictionMarket.createMarket(testCIDMultihash2, '300' + '000000000000000000', '50');
+      refPool = RefM.initPool(300, 0.5);
     });
 
     it('successful with correct parameters', async () => {
@@ -212,6 +213,14 @@ describe('PredictionMarket contract', () => {
       expect(bet1.numberOfShares).to.equal('13966410658722218550');
       expect(bet2.numberOfShares).to.equal('13119426187550909100');
       expect(bet3.numberOfShares).to.equal('12369324028795941150');
+      
+      // Sanity check hard coded numbers against reference implementation
+      RefM.bet(refPool, 'trader', 0, 10);
+      RefM.bet(refPool, 'trader', 0, 10);
+      RefM.bet(refPool, 'trader', 0, 10);
+      expect(refPool.bets[0].shares).to.be.closeTo(13.9664106587, 0.0000000001);
+      expect(refPool.bets[1].shares).to.be.closeTo(13.1194261875, 0.0000000001);
+      expect(refPool.bets[2].shares).to.be.closeTo(12.3693240287, 0.0000000001);
     });
 
     it('passes gas usage regression test', async () => {
