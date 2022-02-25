@@ -15,6 +15,7 @@ config.truncateThreshold = 0;
 
 const username1 = '0x0000000000000000000000000000000000000000000000000000000074657374';
 const username2 = '0x0000000000000000000000000000000000000000000000000000000074657375';
+const username3 = '0x0000000000000000000000000000000000000000000000000000000074657376';
 
 // Not strictly necessary fo the tests to use CID, but like to keep it here as a 'proof' that the contract
 // can interact with a CID
@@ -194,14 +195,13 @@ describe('PredictionMarket contract', () => {
       const bet = await predictionMarket.getBet(wallet.address, 0, 0);
       expect(bet.useraddress).to.equal(wallet.address);
       expect(bet.betsize).to.equal('10' + '000000000000000000');
-      expect(bet.numberOfShares).to.equal('13966410658722218550');
+      expect(bet.numberOfShares).to.equal('93109404391481457');
       expect(bet.outcome).to.equal(0);
       const userFromCall = await predictionMarket.users(wallet.address);
       expect(userFromCall.balance.toString()).to.equal('690' + '000000000000000000'); // 690 Tokens left, having put 300 in the pool, and 10 on the bet.
       const market = await predictionMarket.getMarket(wallet.address, 0);
       expect(market.numberOfBets).to.equal(1);
     });
-
 
     it('gives you less on the subsequent bets', async () => {
       await predictionMarket.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
@@ -210,9 +210,9 @@ describe('PredictionMarket contract', () => {
       const bet1 = await predictionMarket.getBet(wallet.address, 0, 0);
       const bet2 = await predictionMarket.getBet(wallet.address, 0, 1);
       const bet3 = await predictionMarket.getBet(wallet.address, 0, 2);
-      expect(bet1.numberOfShares).to.equal('13966410658722218550');
-      expect(bet2.numberOfShares).to.equal('13119426187550909100');
-      expect(bet3.numberOfShares).to.equal('12369324028795941150');
+      expect(bet1.numberOfShares).to.equal('93109404391481457');
+      expect(bet2.numberOfShares).to.equal('87462841250339394');
+      expect(bet3.numberOfShares).to.equal('82462160191972941');
       
       // Sanity check hard coded numbers against reference implementation
       RefM.bet(refPool, 'trader', 0, 10);
@@ -222,6 +222,9 @@ describe('PredictionMarket contract', () => {
       expect(bet2.numberOfShares).to.be.closeTo(Math.floor(refPool.bets[1].shares * 10 ** 18).toString(), 10000);
       expect(bet3.numberOfShares).to.be.closeTo(Math.floor(refPool.bets[2].shares * 10 ** 18).toString(), 10000);
     });
+
+    // TODO: a buy/sell scenario, with a whale at the end.
+    // TODO: time argument, the time after which no bets can be taken - allow time to be adjusted.
 
     it('passes gas usage regression test', async () => {
       const before = await wallet.getBalance();
@@ -263,6 +266,84 @@ describe('PredictionMarket contract', () => {
       expect(events[0].args.marketCreatorAddress).to.equal(wallet.address);
       expect(events[0].args.marketIndex).to.equal('0');
       expect(events[0].args.betIndex).to.equal('0');
+    });
+  });
+
+  describe('market resolution', () => {
+    const [wallet, wallet2, wallet3] = new MockProvider().getWallets();
+    let contractW1: Contract;
+    let contractW2: Contract;
+    let contractW3: Contract;
+    const marketWalletAddress = wallet.address;
+
+    beforeEach(async () => {
+      contractW1 = await deployContract(wallet, PredictionMarket, []);
+      contractW2 = await contractW1.connect(wallet2);
+      contractW3 = await contractW1.connect(wallet3);
+
+      await contractW1.register(username1, testCIDMultihash1);
+      await contractW2.register(username2, testCIDMultihash1);
+      await contractW3.register(username3, testCIDMultihash1);
+
+      await contractW1.createMarket(testCIDMultihash2, '300' + '000000000000000000', '50');
+      
+      await contractW2.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0);
+      await contractW3.makeBet(marketWalletAddress, 0, '5' + '000000000000000000', 1);
+      await contractW2.makeBet(marketWalletAddress, 0, '5' + '000000000000000000', 0);      
+    });
+
+    describe('resolves correctly', async () => {
+
+      it ('when resolving 0', async () => {
+        await contractW1.resolve(0, 0);
+        const w1User = await contractW1.users(wallet.address);
+        const w2User = await contractW1.users(wallet2.address);
+        const w3User = await contractW1.users(wallet3.address);
+        //console.log([w1User.balance.toString(),w2User.balance.toString(),w3User.balance.toString()]);
+        //const events = await contractW1.queryFilter({ topics: [utils.id("Debug(string,uint256)")] });
+        //console.log(events.map(e => e.args.msg + ': ' + e.args.val.toString()));
+        
+        // TODO compare with reference implementation, not hard code
+        expect(w1User.balance).to.equal('0986602132669232863650');
+        expect(w2User.balance).to.equal('1018397867330767136350');
+        expect(w3User.balance).to.equal('0995000000000000000000');      
+
+        expect(w1User.balance.add(w2User.balance).add(w3User.balance)).to.equal('3000' + '000000000000000000', "no money has been created or destroyed");
+        expect(w1User.balance).to.be.lt('1000' + '000000000000000000', "pool owner loses, because more money was wagered on the winner");
+        expect(w2User.balance).to.be.gt('1000' + '000000000000000000', "he won");
+        expect(w3User.balance).to.be.lt('1000' + '000000000000000000', "he lost");
+        expect(w3User.balance).to.be.gt(w1User.balance, "the pool owner loses more as he took the lions share of the 15 bet.");
+      });
+
+      it ('when resolving 1', async () => {
+        await contractW1.resolve(0, 1);
+        const w1User = await contractW1.users(wallet.address);
+        const w2User = await contractW1.users(wallet2.address);
+        const w3User = await contractW1.users(wallet3.address); 
+
+        expect(w1User.balance.add(w2User.balance).add(w3User.balance)).to.equal('3000' + '000000000000000000', "no money has been created or destroyed");
+        expect(w1User.balance).to.be.gt('1000' + '000000000000000000', "pool owner gains, because more money was wagered on the lose");
+        expect(w2User.balance).to.be.lt('1000' + '000000000000000000', "he lost");
+        expect(w3User.balance).to.be.gt('1000' + '000000000000000000', "he won");
+        expect(w3User.balance).to.be.lt(w1User.balance, "the pool owner wins more as he took the lions share of the 15 bet.");
+      });
+    });
+
+    it('cannot be done by another user', async () => {
+      await expect(contractW2.resolve(0, 0)).to.be.reverted;
+    });
+
+    it('means you can\'t make a bet on the market', async () => {
+      await contractW1.resolve(0, 0);
+      await expect(contractW2.makeBet(marketWalletAddress, 0, '10' + '000000000000000000', 0)).to.be.reverted;
+    });
+    
+    it('emits market resolved events', async () => {
+      await contractW1.resolve(0, 0);      
+      const events = await contractW1.queryFilter({ topics: [utils.id("MarketResolved(address,uint256)")] });
+      expect(events).to.be.length(1);
+      expect(events[0].args.useraddress).to.equal(wallet.address);
+      expect(events[0].args.index).to.equal('0');
     });
   });
 });

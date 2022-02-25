@@ -37,9 +37,9 @@ export function poolInfo(pool: Pool): any {
       pool.initialMoney * (1 - pool.initialProb) +
       sum(pool.bets.filter((b) => b.outcome === 1).map((b) => b.money)),
     sharesOfA:
-      (pool.initialMoney * pool.initialProb) + sum(pool.bets.filter((b) => b.outcome === 0).map((b) => b.shares)),
+      1 + sum(pool.bets.filter((b) => b.outcome === 0).map((b) => b.shares)),
     sharesOfB:
-      (pool.initialMoney * (1 - pool.initialProb)) + sum(pool.bets.filter((b) => b.outcome === 1).map((b) => b.shares)),
+      1 + sum(pool.bets.filter((b) => b.outcome === 1).map((b) => b.shares)),
   };
 
   result.totalMoney = result.moneyOnA + result.moneyOnB;

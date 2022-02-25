@@ -8,7 +8,9 @@ contract PredictionMarket {
   
     event AccountCreated(bytes32 indexed username, address originaladdress);
     event MarketCreated(address indexed useraddress, uint index);
+    event MarketResolved(address indexed useraddress, uint index);
     event BetMade(address indexed marketCreatorAddress, uint indexed marketIndex, uint betIndex);
+    // event Debug(string msg, uint val);
 
     uint constant tokenToBalance = 1e18; // And this has to match the math library!
     uint constant freeBalanceOnRegistration = tokenToBalance * 1000;
@@ -28,6 +30,7 @@ contract PredictionMarket {
       uint8 prob;
       bytes32 infoMultihash;
       uint numberOfBets;
+      bool resolved;
       mapping(uint => Bet) bets; // Bets placed on this market by any user
     }
 
@@ -125,22 +128,21 @@ contract PredictionMarket {
         require(markercreator.username != 0);
         Market storage market =  markercreator.markets[marketIndex];
         require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
+        require(!market.resolved);
 
         // Shares Calculation >>
-        uint totalPoolSize = market.pool;
+        uint sharesOnNonOutcome = tokenToBalance; // pool creator's share considered "1"
         uint moneyOnOutcome = 0;
 
-        if (outcome == 1) {
+        if (outcome == 0) {
           moneyOnOutcome = market.pool * market.prob / 100;
         } else {
           moneyOnOutcome = market.pool * (100 - market.prob) / 100;
         }
 
-        uint sharesOnNonOutcome = moneyOnOutcome; // arbitarly set the first shares as owned by the pool owner to be the money they put on that outcome
 
         for (uint i=0; i<market.numberOfBets; i++) {
           Bet storage betForAgg = market.bets[i];
-          totalPoolSize += betForAgg.betsize;
 
           if (betForAgg.outcome == outcome) {
             moneyOnOutcome += betForAgg.betsize;
@@ -164,7 +166,6 @@ contract PredictionMarket {
 
         bet.numberOfShares = numberOfShares;
         bet.outcome = outcome;
-        bet.useraddress = msg.sender;
 
         market.bets[market.numberOfBets] = bet;
         market.numberOfBets ++;
@@ -172,4 +173,72 @@ contract PredictionMarket {
         emit BetMade(marketCreatorAddress, marketIndex, market.numberOfBets - 1);
     }
 
+    /// @notice resolves a market
+    /// @param marketIndex the index for the sending user of the market to resolve
+    /// @param outcome the chosen outcome, 0 or 1
+    function resolve(uint marketIndex, uint8 outcome) public {
+        User storage user = users[msg.sender];
+        require(user.username != 0);
+
+        Market storage market =  user.markets[marketIndex];
+        require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
+        require(!market.resolved);
+
+        uint sharesOfWinner = tokenToBalance;
+        uint losingSideTotal = 0;
+        uint poolTotal = market.pool;
+        if (outcome == 0) {
+          // emit Debug("market.pool", market.pool);
+          // emit Debug("market.prob", market.prob);
+          losingSideTotal = (market.pool * market.prob) / 100;
+        } else {
+          losingSideTotal = (market.pool * (100-market.prob)) / 100; 
+        }
+
+        // emit Debug("losingSideTotal", losingSideTotal);
+
+        for (uint i=0; i < market.numberOfBets; i++) {
+          Bet storage betForAgg = market.bets[i];
+          // emit Debug("i", i);
+          // emit Debug("betForAgg.numberOfShares", betForAgg.numberOfShares);
+          // emit Debug("betForAgg.betsize", betForAgg.betsize);
+          poolTotal += betForAgg.betsize;
+
+          if (betForAgg.outcome == outcome) {
+            // emit Debug("betForAgg.outcome == outcome", 1);
+            sharesOfWinner += betForAgg.numberOfShares;
+          } else {
+            // emit Debug("betForAgg.outcome == outcome", 0);
+            losingSideTotal + betForAgg.betsize;
+          }
+        }
+        
+        // emit Debug("losingSideTotal", losingSideTotal);
+        // emit Debug("sharesOfWinner", sharesOfWinner);
+        // emit Debug("poolTotal", poolTotal);
+
+        uint paidOut = 0;
+
+        // Perform payouts
+        for (uint i=0; i<market.numberOfBets; i++) {
+          Bet storage betForAgg = market.bets[i];
+          if (betForAgg.outcome == outcome) {
+            // emit Debug("i", i);
+            // emit Debug("betForAgg.numberOfShares", betForAgg.numberOfShares);
+            // emit Debug("betForAgg.numberOfShares.div(sharesOfWinner)", betForAgg.numberOfShares.div(sharesOfWinner));
+            uint payout = betForAgg.numberOfShares.div(sharesOfWinner).mul(losingSideTotal) + betForAgg.betsize; // Return their bet, and a proportion of the losing pool
+            // emit Debug("payout", payout);
+            users[betForAgg.useraddress].balance += payout; // We don't do a transactional here, because it's a waste of gas. The market is set as resolved anyway.
+            paidOut += payout;
+            poolTotal -= payout;
+          }
+        }
+
+        // Calculate the balance change using the remainder so that we don't create/destroy money because of rounding issues
+        users[msg.sender].balance += poolTotal;
+
+        market.resolved = true;
+
+        emit MarketResolved(msg.sender, marketIndex);
+    }
 }
