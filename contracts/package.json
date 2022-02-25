@@ -4,7 +4,8 @@
   "description": "",
   "main": "deploy.js",
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }'  NODE_OPTIONS=--openssl-legacy-provider TS_NODE_TRANSPILE_ONLY=true mocha --timeout 30000 -r ts-node/register 'test/**/*.ts'",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' TS_NODE_FILES=true NODE_OPTIONS=--openssl-legacy-provider TS_NODE_TRANSPILE_ONLY=true mocha --timeout 30000 -r ts-node/register 'test/**/*.ts'",
+    "test2": "env NODE_OPTIONS=--openssl-legacy-provider mocha --timeout 30000 'test/**/*.js'",
     "build": "waffle"
   },
   "author": "",
@@ -13,10 +14,12 @@
     "@types/bn.js": "^5.1.0",
     "@types/dotenv": "^8.2.0",
     "@types/fs-extra": "^9.0.13",
+    "@types/web3": "^1.0.19",
     "bn.js": "^5.2.0",
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
     "multiformats": "^9.6.4",
+    "newton-raphson-method": "^1.0.2",
     "prb-math": "^2.4.3",
     "solc": "^0.8.11",
     "web3": "^1.7.0"
@@ -28,6 +31,7 @@
     "chai": "^4.3.6",
     "chai-subset": "^1.6.0",
     "ethereum-waffle": "^3.4.0",
+    "fast-check": "^2.22.0",
     "mocha": "^9.2.1",
     "ts-node": "^10.5.0"
   }

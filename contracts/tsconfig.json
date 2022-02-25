@@ -3,10 +3,11 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "types": ["node", "mocha"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"],
   "ts-node": {
     "files": true
-  },
+  }
 }

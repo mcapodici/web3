@@ -210,9 +210,8 @@ describe('PredictionMarket contract', () => {
       const bet1 = await predictionMarket.getBet(wallet.address, 0, 0);
       const bet2 = await predictionMarket.getBet(wallet.address, 0, 1);
       const bet3 = await predictionMarket.getBet(wallet.address, 0, 2);
-      expect(bet1.numberOfShares).to.equal('93109404391481457');
-      expect(bet2.numberOfShares).to.equal('87462841250339394');
-      expect(bet3.numberOfShares).to.equal('82462160191972941');
+      expect(bet1.numberOfShares).to.be.gt(bet2.numberOfShares);
+      expect(bet2.numberOfShares).to.be.gt(bet3.numberOfShares);
       
       // Sanity check hard coded numbers against reference implementation
       RefM.bet(refPool, 'trader', 0, 10);

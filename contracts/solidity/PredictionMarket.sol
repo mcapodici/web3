@@ -151,6 +151,11 @@ contract PredictionMarket {
           }
         }
 
+        // TODO! There is a mistake in this formula and it is actually to hard to reverse.
+        // What will work is to use newtons method outside of the contract https://en.wikipedia.org/wiki/Newton's_method
+        // to calc the number of shares needed, then pass that in and use Pennock's: p(n) = M1/M2 * exp(n / N2)
+        // to work out the price per share and automatically apply that amount. Set N2 = 1 as now for the initial pool.
+
         // Use log2 instead of ln to save gas, and it just multiplies everyones share by the same factor anyway
         uint numberOfShares = (betsize.div(moneyOnOutcome) + tokenToBalance).log2().mul(sharesOnNonOutcome); 
 
@@ -222,6 +227,7 @@ contract PredictionMarket {
         // Perform payouts
         for (uint i=0; i<market.numberOfBets; i++) {
           Bet storage betForAgg = market.bets[i];
+
           if (betForAgg.outcome == outcome) {
             // emit Debug("i", i);
             // emit Debug("betForAgg.numberOfShares", betForAgg.numberOfShares);
