@@ -1,6 +1,4 @@
-import lambertw from './lambertw';
-
-const requiredPrecision = 10 ** 18;
+import * as MathUtil from '../util/Math';
 
 // This code provides a reference implementation in JS so that I can compare
 // this to what the smart contract returns. This has some advantages - one I can
@@ -76,16 +74,14 @@ export function resolve(pool: Pool, outcome: number) {
   pool.bets.filter(b=>b.outcome ==outcome).map(b =>result[b.who] = (result[b.who] || 0) + (losingPot * b.shares / winningShares));
   pool.bets.filter(b=>b.outcome !=outcome).map(b =>result[b.who] = (result[b.who] || 0) - (b.money));
 
-  const net = sum(Object.values(pi));
+  const net = sum(Object.values(result));
   result ['creator'] = net + pool.initialMoney;
   return result;
 }
 
 export function calculateSharesForBetAmount(pool: Pool, outcome: number, betAmount: number) {
   const pi = poolInfo(pool);  
-  const moneyOnOutcome = outcome === 0 ? pi.moneyOnA : pi.moneyOnB;
-  const sharesOfOther = outcome === 0 ? pi.sharesOfB : pi.sharesOfA;
-  return  lambertw.gsl_sf_lambert_W0(betAmount / moneyOnOutcome) *  sharesOfOther;
+  return MathUtil.calculateSharesForBetAmount(pi.moneyOnA, pi.moneyOnB, pi.sharesOfA, pi.sharesOfB, outcome, betAmount);
 }
 
 export function getCost(pool: Pool, outcome: number, numberOfShares: number) {

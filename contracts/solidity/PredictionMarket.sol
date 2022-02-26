@@ -50,9 +50,9 @@ contract PredictionMarket {
     /// @dev Further information on CIDS: https://docs.ipfs.io/concepts/content-addressing/#identifier-formats
     /// @dev Application-defined interpretation of how to make use of the data stored at the CID address.
     function register(bytes32 username, bytes32 userinfoMultihash) public {
-        require(username != 0);
-        require(usernames[username] == address(0));
-        require(users[msg.sender].username == 0);
+        require(username != 0, "username required");
+        require(usernames[username] == address(0), "username taken");
+        require(users[msg.sender].username == 0, "already registered");
 
         User storage user = users[msg.sender];
         user.username = username;
@@ -68,7 +68,7 @@ contract PredictionMarket {
     /// @dev see "register()" dev notes about userinfoMultihash
     function updateUserInfo(bytes32 userinfoMultihash) public {
         User storage user = users[msg.sender];
-        require(user.username != 0); // Yes they registered before (otherwise they should use register).
+        require(user.username != 0, "not registered"); // Yes they registered before (otherwise they should use register).
         user.userinfoMultihash = userinfoMultihash;
     }
 
@@ -89,11 +89,11 @@ contract PredictionMarket {
     /// just have to be centralized for now.
     function createMarket(bytes32 infoMultihash, uint pool, uint8 prob) public {
         User storage user = users[msg.sender];
-        require(user.username != 0);
+        require(user.username != 0, "not registered");
 
-        require(pool >= minBalanceForPool);
-        require(prob >= 1 && prob <= 99);
-        require(user.balance >= pool);
+        require(pool >= minBalanceForPool, "pool too small");
+        require(prob >= 1 && prob <= 99, "prob out of range");
+        require(user.balance >= pool, "not enough funds");
 
         // Set up Market
         // =============
@@ -118,16 +118,16 @@ contract PredictionMarket {
     /// @param outcome currently only supports 0 = NO and 1 = YES
     function makeBet(address marketCreatorAddress, uint marketIndex, uint numberOfShares, uint8 outcome) public {
         User storage user = users[msg.sender];
-        require(user.username != 0);
+        require(user.username != 0, "not registered");
 
-        require(numberOfShares > 0);
-        require(outcome == 0 || outcome == 1);
+        require(numberOfShares > 0, "number of shares invalid");
+        require(outcome == 0 || outcome == 1, "outcome invalid");
 
         User storage markercreator = users[marketCreatorAddress];
-        require(markercreator.username != 0);
+        require(markercreator.username != 0, "invalid market");
         Market storage market =  markercreator.markets[marketIndex];
-        require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
-        require(!market.resolved);
+        require(market.pool != 0, "invalid market"); // 0 if market doesn't exist, if index is out of bounds.
+        require(!market.resolved, "market resolved");
 
         // Shares Calculation >>
         uint sharesOfOther = tokenToBalance; // pool creator's share considered "1"
@@ -153,8 +153,8 @@ contract PredictionMarket {
         // Based on http://dpennock.com/papers/pennock-ec-2004-dynamic-parimutuel.pdf 4.2.1 (7)
         uint betsize = moneyOnOutcome.div(sharesOfOther).mul(numberOfShares).mul(numberOfShares.div(sharesOfOther).exp());
 
-        require(betsize >= minBetsize);
-        require(user.balance >= betsize);
+        require(betsize >= minBetsize, "bet size too small");
+        require(user.balance >= betsize, "insufficient fake money");
 
         Bet memory bet;
 
@@ -180,11 +180,11 @@ contract PredictionMarket {
     /// @param outcome the chosen outcome, 0 or 1
     function resolve(uint marketIndex, uint8 outcome) public {
         User storage user = users[msg.sender];
-        require(user.username != 0);
+        require(user.username != 0, "not registered");
 
         Market storage market =  user.markets[marketIndex];
-        require(market.pool != 0); // 0 if market doesn't exist, if index is out of bounds.
-        require(!market.resolved);
+        require(market.pool != 0, "invalid market"); // 0 if market doesn't exist, if index is out of bounds.
+        require(!market.resolved, "market resolved");
 
         uint sharesOfWinner = tokenToBalance;
         uint losingSideTotal = 0;
