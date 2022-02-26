@@ -114,14 +114,13 @@ contract PredictionMarket {
     /// @notice place a bet on a market
     /// @param marketCreatorAddress the address of the user who created the market
     /// @param marketIndex the index of the market for the user who created it
-    /// @param betsize the amount to bet
+    /// @param numberOfShares the number of shares to purchase (fixed 18 point)
     /// @param outcome currently only supports 0 = NO and 1 = YES
-    function makeBet(address marketCreatorAddress, uint marketIndex, uint betsize, uint8 outcome) public {
+    function makeBet(address marketCreatorAddress, uint marketIndex, uint numberOfShares, uint8 outcome) public {
         User storage user = users[msg.sender];
         require(user.username != 0);
 
-        require(betsize >= minBetsize);
-        require(user.balance >= betsize);
+        require(numberOfShares > 0);
         require(outcome == 0 || outcome == 1);
 
         User storage markercreator = users[marketCreatorAddress];
@@ -131,7 +130,7 @@ contract PredictionMarket {
         require(!market.resolved);
 
         // Shares Calculation >>
-        uint sharesOnNonOutcome = tokenToBalance; // pool creator's share considered "1"
+        uint sharesOfOther = tokenToBalance; // pool creator's share considered "1"
         uint moneyOnOutcome = 0;
 
         if (outcome == 0) {
@@ -147,17 +146,15 @@ contract PredictionMarket {
           if (betForAgg.outcome == outcome) {
             moneyOnOutcome += betForAgg.betsize;
           } else {
-            sharesOnNonOutcome += betForAgg.numberOfShares;
+            sharesOfOther += betForAgg.numberOfShares;
           }
         }
 
-        // TODO! There is a mistake in this formula and it is actually to hard to reverse.
-        // What will work is to use newtons method outside of the contract https://en.wikipedia.org/wiki/Newton's_method
-        // to calc the number of shares needed, then pass that in and use Pennock's: p(n) = M1/M2 * exp(n / N2)
-        // to work out the price per share and automatically apply that amount. Set N2 = 1 as now for the initial pool.
+        // Based on http://dpennock.com/papers/pennock-ec-2004-dynamic-parimutuel.pdf 4.2.1 (7)
+        uint betsize = moneyOnOutcome.div(sharesOfOther).mul(numberOfShares).mul(numberOfShares.div(sharesOfOther).exp());
 
-        // Use log2 instead of ln to save gas, and it just multiplies everyones share by the same factor anyway
-        uint numberOfShares = (betsize.div(moneyOnOutcome) + tokenToBalance).log2().mul(sharesOnNonOutcome); 
+        require(betsize >= minBetsize);
+        require(user.balance >= betsize);
 
         Bet memory bet;
 
