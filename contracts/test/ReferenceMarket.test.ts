@@ -13,29 +13,24 @@ describe("In the reference market, ", () => {
       fc.property(positiveNumberProp, fc.context(), (targetcost, c) => {
         const outcome = 0;
         const pool = RM.initPool(1000, 0.1);
-        const pi = RM.poolInfo(pool);
-        const moneyOnOutcome = outcome === 0 ? pi.moneyOnA : pi.moneyOnB;
-        const sharesOfOther = outcome === 0 ? pi.sharesOfB : pi.sharesOfA;
-        const shares =
-          lambertw.gsl_sf_lambert_W0(targetcost / moneyOnOutcome) *
-          sharesOfOther;
-
-        const cost =
-          (moneyOnOutcome / sharesOfOther) *
-          shares *
-          Math.exp(shares / sharesOfOther);
-        c.log("Actual cost:" + cost.toString());
-        return getError(targetcost, cost) < 0.001;
+        const shares = RM.calculateSharesForBetAmount(pool,  outcome, targetcost);
+        RM.bet(pool, 'x', outcome, shares);
+        const actualcost = pool.bets[0].money;
+        c.log("Actual cost:" + actualcost.toString());
+        return getError(targetcost, actualcost) < 0.001;
       })
     );
   });
   
   it("Cost per share increases as people bet on the same thing", () => {
     fc.assert(
-      fc.property(positiveNumberProp, (n) => {
+      fc.property(positiveNumberProp, fc.context(), (targetcost, c) => {
+        const outcome = 0;
         const pool = RM.initPool(1000, 0.1);
-        RM.bet(pool, "x", 0, n);
-        RM.bet(pool, "x", 0, n);
+        const shares = RM.calculateSharesForBetAmount(pool,  outcome, targetcost);
+        RM.bet(pool, "x", outcome, shares);
+        RM.bet(pool, "x", outcome, shares);
+        c.log(JSON.stringify(pool.bets));
         return pool.bets[0].money < pool.bets[1].money;
       })
     );

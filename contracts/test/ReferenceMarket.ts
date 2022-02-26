@@ -1,4 +1,4 @@
-import nr from 'newton-raphson-method';
+import lambertw from './lambertw';
 
 const requiredPrecision = 10 ** 18;
 
@@ -81,8 +81,8 @@ export function resolve(pool: Pool, outcome: number) {
   return result;
 }
 
-export function calculateSharesForBetAmount(pool: Pool, who: string, outcome: number, betAmount: number) {
-  
+export function calculateSharesForBetAmount(pool: Pool, outcome: number, betAmount: number) {
+  const pi = poolInfo(pool);  
   const moneyOnOutcome = outcome === 0 ? pi.moneyOnA : pi.moneyOnB;
   const sharesOfOther = outcome === 0 ? pi.sharesOfB : pi.sharesOfA;
   return  lambertw.gsl_sf_lambert_W0(betAmount / moneyOnOutcome) *  sharesOfOther;
@@ -111,7 +111,10 @@ export function getCost(pool: Pool, outcome: number, numberOfShares: number) {
   // n/N2 = W(tcost/M1)
   // n = N2 * W(tcost/M1)
   
-  return (moneyOnOutcome / sharesOfOther) * numberOfShares * Math.exp(numberOfShares / sharesOfOther);
+  const cost = (moneyOnOutcome / sharesOfOther) * numberOfShares * Math.exp(numberOfShares / sharesOfOther);
+  if (!isFinite(cost))
+    throw 'Cost would be infinite';
+  return cost;
 }
 
 export function bet(pool: Pool, who: string, outcome: number, numberOfShares: number) {
