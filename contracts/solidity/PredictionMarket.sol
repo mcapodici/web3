@@ -30,6 +30,7 @@ contract PredictionMarket {
       uint8 prob;
       bytes32 infoMultihash;
       uint numberOfBets;
+      uint closesAt;
       bool resolved;
       mapping(uint => Bet) bets; // Bets placed on this market by any user
     }
@@ -72,9 +73,9 @@ contract PredictionMarket {
         user.userinfoMultihash = userinfoMultihash;
     }
 
-    function getMarket(address userAddress, uint index) public view returns (uint pool, uint8 prob, bytes32 infoMultihash, uint numberOfBets) {
+    function getMarket(address userAddress, uint index) public view returns (uint pool, uint8 prob, bytes32 infoMultihash, uint numberOfBets, uint closesAt) {
       Market storage market = users[userAddress].markets[index];
-      return (market.pool, market.prob, market.infoMultihash, market.numberOfBets);
+      return (market.pool, market.prob, market.infoMultihash, market.numberOfBets, market.closesAt);
     }
 
     function getBet(address userAddress, uint marketIndex, uint betIndex) public view returns (Bet memory) {
@@ -86,8 +87,9 @@ contract PredictionMarket {
     /// @param infoMultihash The multihash for market title and initial description, using a v0 CID.
     /// @param pool Amount of money to initialise the pool with
     /// @dev further commentary is handled off contract to be gas-efficient. Unfortunately IPNS seems so slow that it might
+    /// @param closesAt the time (in EVM format, seconds since epoch) to stop taking bets on the market
     /// just have to be centralized for now.
-    function createMarket(bytes32 infoMultihash, uint pool, uint8 prob) public {
+    function createMarket(bytes32 infoMultihash, uint pool, uint8 prob, uint closesAt) public {
         User storage user = users[msg.sender];
         require(user.username != 0, "no user for this account");
 
@@ -107,6 +109,7 @@ contract PredictionMarket {
 
         market.prob = prob;
         market.infoMultihash = infoMultihash;
+        market.closesAt = closesAt;
 
         emit MarketCreated(msg.sender, user.numberOfMarkets - 1);
     }
@@ -128,6 +131,7 @@ contract PredictionMarket {
         Market storage market =  markercreator.markets[marketIndex];
         require(market.pool != 0, "invalid market"); // 0 if market doesn't exist, if index is out of bounds.
         require(!market.resolved, "market resolved");
+        require(market.closesAt > block.timestamp, "market closed");
 
         // Shares Calculation >>
         uint sharesOfOther = tokenToBalance; // pool creator's share considered "1"

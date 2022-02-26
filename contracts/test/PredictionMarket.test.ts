@@ -21,6 +21,8 @@ const toFixed18 = (n) =>
       (n.toString().split(".")[1] || "").padEnd(18, "0")
   );
 
+const timeAfterUniverse = BigNumber.from('1000000000000000000');
+
 config.truncateThreshold = 0;
 
 const username1 =
@@ -157,12 +159,15 @@ describe("PredictionMarket contract", () => {
       await predictionMarket.createMarket(
         testCIDMultihash2,
         toFixed18(300),
-        "50"
+        "50",
+        timeAfterUniverse
       );
       const market = await predictionMarket.getMarket(wallet.address, 0);
+      console.log(market.closesAt.toString());
       expect(market.pool).to.equal(toFixed18(300));
       expect(market.prob).to.equal(50);
       expect(market.infoMultihash).to.equal(testCIDMultihash2);
+      expect(market.closesAt).to.equal(timeAfterUniverse);
       const userFromCall = await predictionMarket.users(wallet.address);
       expect(userFromCall.numberOfMarkets).to.equal("1");
       expect(userFromCall.balance.toString()).to.equal(toFixed18(700)); // 700 Tokens left, having sent 300 to this pool
@@ -173,12 +178,14 @@ describe("PredictionMarket contract", () => {
       await predictionMarket.createMarket(
         testCIDMultihash2,
         toFixed18(20),
-        "50"
+        "50",
+        timeAfterUniverse
       );
       await predictionMarket.createMarket(
         testCIDMultihash2,
         toFixed18(30),
-        "40"
+        "40",
+        timeAfterUniverse
       );
       const market1 = await predictionMarket.getMarket(wallet.address, 0);
       expect(market1.pool).to.equal(toFixed18(20));
@@ -193,7 +200,7 @@ describe("PredictionMarket contract", () => {
 
     it("unsuccessful for address without user", async () => {
       await expect(
-        predictionMarket.createMarket(testCIDMultihash2, toFixed18(1000), "50")
+        predictionMarket.createMarket(testCIDMultihash2, toFixed18(1000), "50", timeAfterUniverse)
       ).to.be.revertedWith('no user for this account');
     });
 
@@ -203,7 +210,8 @@ describe("PredictionMarket contract", () => {
         predictionMarket.createMarket(
           testCIDMultihash2,
           "1000" + "000000000000000001",
-          "50"
+          "50",
+          timeAfterUniverse
         )
       ).to.be.revertedWith('insufficient balance');
     });
@@ -214,7 +222,8 @@ describe("PredictionMarket contract", () => {
         predictionMarket.createMarket(
           testCIDMultihash2,
           "9" + "900000000000000000",
-          "50"
+          "50",
+          timeAfterUniverse
         )
       ).to.be.revertedWith('pool too small');
     });
@@ -222,10 +231,10 @@ describe("PredictionMarket contract", () => {
     it("unsuccessful if probability out of range 1 - 99", async () => {
       await predictionMarket.register(username1, testCIDMultihash1);
       await expect(
-        predictionMarket.createMarket(testCIDMultihash2, toFixed18(1000), "0")
+        predictionMarket.createMarket(testCIDMultihash2, toFixed18(1000), "0", timeAfterUniverse)
       ).to.be.revertedWith('prob out of range');
       await expect(
-        predictionMarket.createMarket(testCIDMultihash2, toFixed18(1000), "100")
+        predictionMarket.createMarket(testCIDMultihash2, toFixed18(1000), "100", timeAfterUniverse)
       ).to.be.revertedWith('prob out of range');
     });
 
@@ -234,7 +243,8 @@ describe("PredictionMarket contract", () => {
       await predictionMarket.createMarket(
         testCIDMultihash2,
         toFixed18(1000),
-        "50"
+        "50",
+        timeAfterUniverse
       );
       const events = await predictionMarket.queryFilter({
         topics: [utils.id("MarketCreated(address,uint256)")],
@@ -246,7 +256,8 @@ describe("PredictionMarket contract", () => {
   });
 
   describe("bet creation", () => {
-    const [wallet, wallet2] = new MockProvider().getWallets();
+    const provider = new MockProvider();
+    const [wallet, wallet2] = provider.getWallets();
     let predictionMarket: Contract;
     const marketWalletAddress = wallet.address;
     let refPool: RefM.Pool;
@@ -257,9 +268,34 @@ describe("PredictionMarket contract", () => {
       await predictionMarket.createMarket(
         testCIDMultihash2,
         toFixed18(300),
-        "50"
+        "50",
+        timeAfterUniverse
       );
       refPool = RefM.initPool(300, 0.5);
+    });
+
+    it("not possible for closed market", async () => {
+      const block = await provider.getBlock(provider._lastBlockNumber);
+      const past = block.timestamp - 1;
+      await predictionMarket.createMarket(
+        testCIDMultihash2,
+        toFixed18(300),
+        "50",
+        past
+      );
+      await expect(predictionMarket.makeBet(marketWalletAddress, 1, toFixed18(0.1), 0)).to.be.revertedWith('market closed');
+    });
+
+    it("possible for just about open market", async () => {
+      const block = await provider.getBlock(provider._lastBlockNumber);
+      const past = block.timestamp + 120;
+      await predictionMarket.createMarket(
+        testCIDMultihash2,
+        toFixed18(300),
+        "50",
+        past
+      );
+      await expect(predictionMarket.makeBet(marketWalletAddress, 1, toFixed18(0.1), 0)).to.not.be.reverted;
     });
 
     it("successful with correct parameters", async () => {
@@ -304,7 +340,6 @@ describe("PredictionMarket contract", () => {
     });
 
     // TODO: a buy/sell scenario, with a whale at the end.
-    // TODO: time argument, the time after which no bets can be taken - allow time to be adjusted.
 
     it("passes gas usage regression test", async () => {
       const before = await wallet.getBalance();
@@ -378,7 +413,7 @@ describe("PredictionMarket contract", () => {
       await contractW2.register(username2, testCIDMultihash1);
       await contractW3.register(username3, testCIDMultihash1);
 
-      await contractW1.createMarket(testCIDMultihash2, toFixed18(300), "50");
+      await contractW1.createMarket(testCIDMultihash2, toFixed18(300), "50", timeAfterUniverse);
 
       await contractW2.makeBet(marketWalletAddress, 0, toFixed18(0.1), 0);
       await contractW3.makeBet(marketWalletAddress, 0, toFixed18(0.05), 1);
