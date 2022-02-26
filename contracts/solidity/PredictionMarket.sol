@@ -133,7 +133,7 @@ contract PredictionMarket {
         require(!market.resolved, "market resolved");
         require(market.closesAt > block.timestamp, "market closed");
 
-        // Shares Calculation >>
+        // Cost of shares Calculation >>
         uint sharesOfOther = tokenToBalance; // pool creator's share considered "1"
         uint moneyOnOutcome = 0;
 
@@ -142,7 +142,6 @@ contract PredictionMarket {
         } else {
           moneyOnOutcome = market.pool * (100 - market.prob) / 100;
         }
-
 
         for (uint i=0; i<market.numberOfBets; i++) {
           Bet storage betForAgg = market.bets[i];
@@ -160,10 +159,11 @@ contract PredictionMarket {
         require(betsize >= minBetsize, "bet size too small");
         require(user.balance >= betsize, "insufficient balance");
 
+        // << Cost of shares Calculation
+
         Bet memory bet;
 
         bet.useraddress = msg.sender;
-        // << Shares Calculation
 
         // Transaction >>>
         user.balance -= betsize;            
