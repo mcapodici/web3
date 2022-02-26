@@ -68,7 +68,7 @@ contract PredictionMarket {
     /// @dev see "register()" dev notes about userinfoMultihash
     function updateUserInfo(bytes32 userinfoMultihash) public {
         User storage user = users[msg.sender];
-        require(user.username != 0, "not registered"); // Yes they registered before (otherwise they should use register).
+        require(user.username != 0, "no user for this account"); // Yes they registered before (otherwise they should use register).
         user.userinfoMultihash = userinfoMultihash;
     }
 
@@ -89,11 +89,11 @@ contract PredictionMarket {
     /// just have to be centralized for now.
     function createMarket(bytes32 infoMultihash, uint pool, uint8 prob) public {
         User storage user = users[msg.sender];
-        require(user.username != 0, "not registered");
+        require(user.username != 0, "no user for this account");
 
         require(pool >= minBalanceForPool, "pool too small");
         require(prob >= 1 && prob <= 99, "prob out of range");
-        require(user.balance >= pool, "not enough funds");
+        require(user.balance >= pool, "insufficient balance");
 
         // Set up Market
         // =============
@@ -118,7 +118,7 @@ contract PredictionMarket {
     /// @param outcome currently only supports 0 = NO and 1 = YES
     function makeBet(address marketCreatorAddress, uint marketIndex, uint numberOfShares, uint8 outcome) public {
         User storage user = users[msg.sender];
-        require(user.username != 0, "not registered");
+        require(user.username != 0, "no user for this account");
 
         require(numberOfShares > 0, "number of shares invalid");
         require(outcome == 0 || outcome == 1, "outcome invalid");
@@ -154,7 +154,7 @@ contract PredictionMarket {
         uint betsize = moneyOnOutcome.div(sharesOfOther).mul(numberOfShares).mul(numberOfShares.div(sharesOfOther).exp());
 
         require(betsize >= minBetsize, "bet size too small");
-        require(user.balance >= betsize, "insufficient fake money");
+        require(user.balance >= betsize, "insufficient balance");
 
         Bet memory bet;
 
@@ -180,7 +180,7 @@ contract PredictionMarket {
     /// @param outcome the chosen outcome, 0 or 1
     function resolve(uint marketIndex, uint8 outcome) public {
         User storage user = users[msg.sender];
-        require(user.username != 0, "not registered");
+        require(user.username != 0, "no user for this account");
 
         Market storage market =  user.markets[marketIndex];
         require(market.pool != 0, "invalid market"); // 0 if market doesn't exist, if index is out of bounds.

@@ -75,7 +75,7 @@ export function resolve(pool: Pool, outcome: number) {
   pool.bets.filter(b=>b.outcome !=outcome).map(b =>result[b.who] = (result[b.who] || 0) - (b.money));
 
   const net = sum(Object.values(result));
-  result ['creator'] = net + pool.initialMoney;
+  result ['creator'] = pool.initialMoney - net;
   return result;
 }
 
