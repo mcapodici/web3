@@ -5,7 +5,8 @@
   "main": "deploy.js",
   "scripts": {
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true mocha --timeout 30000 -r ts-node/register 'test/**/*.ts'",
-    "build": "waffle"
+    "build": "waffle",
+    "deploy": "ts-node ./deploy.ts"
   },
   "author": "",
   "dependencies": {
