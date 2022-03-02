@@ -40,7 +40,7 @@ export async function getUserInfo(
   address: string
 ): Promise<UserInfo> {
   const contract = makeContractObject(web3);
-  return await contract.methods.getUser(address).call();x``
+  return await contract.methods.getUser(address).call();
 }
 
 const zeroAddress = '0x0000000000000000000000000000000000000000';

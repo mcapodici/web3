@@ -4,9 +4,10 @@ import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import * as Contract from "ethereum/contracts/PredictionMarket";
 import Web3 from "web3";
+import { Alert, AlertPanel, AlertType } from "sitewide/alerts/AlertPanel";
 
 export interface RegisterModalProps extends Web3Props {
-  onClose: (waitForCompletion: Promise<boolean>) => void;
+  onClose: () => void;
 }
 
 // TODO validate text field
@@ -18,24 +19,40 @@ const RegisterModal = ({
 }: RegisterModalProps) => {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
+  const [error, setError] = useState("");
 
-  const register = () => {
-    const promise = Contract.register(
-      web3Ref.current,
-      firstAccount,
-      username,
-      bio
-    );
-    onClose(promise.then(() => true));
+  const register = async () => {
+    setError('');
+    try {
+      const existing = await Contract.getAccountForUsername(web3Ref.current, username);
+      console.log(existing);
+      if (existing) {
+        setError('That username is already in use.');
+        return;
+      }
+      await Contract.register(web3Ref.current, firstAccount, username, bio);
+    } catch (ex: any) {
+      setError("Details from provider: " + ex.message);
+      return; // Keep modal open so message can be seen.
+    }
+    onClose();
   };
 
+  const alerts: Alert[] =
+    error === ""
+      ? []
+      : [
+          {
+            content: error,
+            header: "Error occured during registraion",
+            type: AlertType.Negative,
+            uniqueId: "predictionmarket.registermodal.error",
+          },
+        ];
+
   return (
-    <Modal
-      size={"mini"}
-      open={true}
-      onClose={() => onClose(Promise.resolve(false))}
-      closeIcon
-    >
+    <Modal size={"mini"} open={true} onClose={() => onClose()} closeIcon>
+      <AlertPanel alerts={alerts} onDismiss={() => setError('')} />
       <Modal.Header>Register for Prediction Markets</Modal.Header>
       <Modal.Content>
         <Form>
