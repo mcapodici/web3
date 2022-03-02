@@ -17,6 +17,7 @@
     "bn.js": "^5.2.0",
     "dotenv": "^16.0.0",
     "fs-extra": "^10.0.0",
+    "ipfs-http-client": "^56.0.1",
     "multiformats": "^9.6.4",
     "newton-raphson-method": "^1.0.2",
     "prb-math": "^2.4.3",

@@ -22,17 +22,28 @@ const RegisterModal = ({
   const [error, setError] = useState("");
 
   const register = async () => {
-    setError('');
+    setError("");
     try {
-      const existing = await Contract.getAccountForUsername(web3Ref.current, username);
+      const existing = await Contract.getAccountForUsername(
+        web3Ref.current,
+        username
+      );
       console.log(existing);
       if (existing) {
-        setError('That username is already in use.');
+        setError("That username is already in use.");
         return;
       }
       await Contract.register(web3Ref.current, firstAccount, username, bio);
     } catch (ex: any) {
-      setError("Details from provider: " + ex.message);
+      let userMessage = "";
+      if (ex.name === "IPFSError") {
+        userMessage =
+          "IPFS Error. Try again later, or register without an about you for now and try again. Message: " +
+          ex.message;
+      } else {
+        userMessage = "Details from provider: " + ex.message;
+      }
+      setError(userMessage);
       return; // Keep modal open so message can be seen.
     }
     onClose();
@@ -52,7 +63,6 @@ const RegisterModal = ({
 
   return (
     <Modal size={"mini"} open={true} onClose={() => onClose()} closeIcon>
-      <AlertPanel alerts={alerts} onDismiss={() => setError('')} />
       <Modal.Header>Register for Prediction Markets</Modal.Header>
       <Modal.Content>
         <Form>
@@ -67,7 +77,7 @@ const RegisterModal = ({
             />
           </Form.Field>
           <Form.Field>
-            <label>Bio</label>
+            <label>About You</label>
             <TextArea
               value={bio}
               onChange={(event) => {
@@ -76,6 +86,7 @@ const RegisterModal = ({
             />
           </Form.Field>
         </Form>
+        <AlertPanel alerts={alerts} onDismiss={() => setError("")} />
       </Modal.Content>
       <Modal.Actions>
         <Button disabled={!username} color="green" onClick={register}>
