@@ -32,7 +32,8 @@ export async function register(
   let multihash = zero32Byte;
   if (bio && bio.length) {
     try {
-      const ipfsResult = await IPFS.addText(bio);
+      const payload = { bio };
+      const ipfsResult = await IPFS.addText(JSON.stringify(payload));
       multihash = IPFS.getMultihashForContract(ipfsResult);
     } catch (ex: any) {
       throw new IPFSError(ex.message);
