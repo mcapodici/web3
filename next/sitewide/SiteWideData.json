@@ -3,6 +3,6 @@
   "ethereumNet": "rinkeby",
   "deployedContractAddresses": {
     "bankAccountFactoryAddress": "0xeF17859FEe1a0cfAF78AF70aA21bD47d0780c853",
-    "predictionMarketsAddress": "0x78BA8ec913693CF6D3E53d7dec8198fD66D480cE"
+    "predictionMarketsAddress": "0xe9E3779C6b29d29F92cA114Cf18a862B08Eaf47C"
   }
 }

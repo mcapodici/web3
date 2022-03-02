@@ -163,7 +163,6 @@ describe("PredictionMarket contract", () => {
         timeAfterUniverse
       );
       const market = await predictionMarket.getMarket(wallet.address, 0);
-      console.log(market.closesAt.toString());
       expect(market.pool).to.equal(toFixed18(300));
       expect(market.prob).to.equal(50);
       expect(market.infoMultihash).to.equal(testCIDMultihash2);

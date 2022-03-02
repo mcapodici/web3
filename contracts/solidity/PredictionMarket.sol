@@ -73,6 +73,11 @@ contract PredictionMarket {
         user.userinfoMultihash = userinfoMultihash;
     }
 
+    function getUser(address userAddress) public view returns (bytes32 username, uint balance, bytes32 userinfoMultihash, uint numberOfMarkets) {
+      User storage user = users[userAddress];
+      return (user.username, user.balance, user.userinfoMultihash, user.numberOfMarkets);      
+    }
+
     function getMarket(address userAddress, uint index) public view returns (uint pool, uint8 prob, bytes32 infoMultihash, uint numberOfBets, uint closesAt) {
       Market storage market = users[userAddress].markets[index];
       return (market.pool, market.prob, market.infoMultihash, market.numberOfBets, market.closesAt);

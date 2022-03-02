@@ -75,10 +75,6 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
 
   useEffect(() => {
     web3init(true);
-    return () => {
-      subscriptionsRef.current.map((s) => console.log(s));
-      subscriptionsRef.current = [];
-    };
   });
 
   const web3Status: Web3Status = firstAccount
