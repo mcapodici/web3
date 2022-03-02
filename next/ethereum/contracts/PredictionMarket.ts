@@ -40,5 +40,15 @@ export async function getUserInfo(
   address: string
 ): Promise<UserInfo> {
   const contract = makeContractObject(web3);
-  return await contract.methods.getUser(address).call();
+  return await contract.methods.getUser(address).call();x``
 }
+
+const zeroAddress = '0x0000000000000000000000000000000000000000';
+
+export async function getAccountForUsername(
+  web3: Web3,
+  username: string): Promise<string | undefined> {
+    const contract = makeContractObject(web3);
+    const res = await contract.methods.usernames(stringToAsciiBytes32(username)).call();
+    return res === zeroAddress ? undefined : res;
+  }
