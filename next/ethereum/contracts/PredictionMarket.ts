@@ -11,10 +11,21 @@ export function makeContractObject(web3: Web3) {
   );
 }
 
-export async function register(web3: Web3, username: string) {
+export const UsernameRegex = /^[A-Za-z_\-]+$/;
+
+export async function register(
+  web3: Web3,
+  address: string,
+  username: string,
+  bio: string
+) {
+  if (!UsernameRegex.test(username)) throw Error("Invalid username");
+
+  // TODO encode the bio as JSON using the IPFS and send it's hash along
   const contract = makeContractObject(web3);
-  // TODO also encode the hash
-  await contract.methods.register(stringToAsciiBytes32(username), 0);
+  await contract.methods
+    .register(stringToAsciiBytes32(username), stringToAsciiBytes32(''))
+    .send({ from: address });
 }
 
 export interface UserInfo {

@@ -4,18 +4,23 @@ import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import Description from "./Description";
 import siteWideData from "sitewide/SiteWideData.json";
-import { getUserInfo, UserInfo } from "ethereum/contracts/PredictionMarket";
+import {
+  getUserInfo,
+  register,
+  UserInfo,
+} from "ethereum/contracts/PredictionMarket";
 import { asciiBytes32ToString } from "util/Bytes";
 import { Header, Icon, Message } from "semantic-ui-react";
+import { RegisterModal } from "./RegisterModal";
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
-
   const web3 = web3Ref.current;
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const init = async () => {
     const usr = await getUserInfo(web3, firstAccount);
-    console.log('x' + asciiBytes32ToString(usr.username) + 'x');
+    console.log("x" + asciiBytes32ToString(usr.username) + "x");
     setUserInfo(usr);
   };
 
@@ -23,28 +28,51 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
     init();
   }, [firstAccount]);
 
-  const decodedUserName = userInfo ? asciiBytes32ToString(userInfo.username) : '';
-  const isRegistered = decodedUserName != '';
+  const decodedUserName = userInfo
+    ? asciiBytes32ToString(userInfo.username)
+    : "";
+  const isRegistered = decodedUserName != "";
 
   return (
     <Layout>
-      <Message info icon header="Register To Play!"
-      content={<p>Click here to</p>}
-      >
+      {isRegistered || (
+        <Message info icon>
           <Icon name="info circle" />
           <div>
-            <Header>Register To Play</Header>
+            <Header>Be A Master Predictor!</Header>
             <p>
-            <a href="/predictionmarkets/register">Click here</a> to register as a user and bet on prediction markets and
-            create your own markets.
+              <a
+                href="#"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setShowRegisterModal(true);
+                }}
+              >
+                Click here
+              </a>{" "}
+              to register as a user and bet on prediction markets and create
+              your own markets.
             </p>
           </div>
-      </Message>
+        </Message>
+      )}
       <Description />
       <p>
         Note that this is using the contract deployed to{" "}
-        <ShortAddressWithLink address={siteWideData.deployedContractAddresses.predictionMarketsAddress} />
+        <ShortAddressWithLink
+          address={
+            siteWideData.deployedContractAddresses.predictionMarketsAddress
+          }
+        />
       </p>
+      {isRegistered && <h1>Welcome, {decodedUserName}!</h1>}
+      {showRegisterModal && (
+        <RegisterModal
+          web3Ref={web3Ref}
+          firstAccount={firstAccount}
+          onClose={() => setShowRegisterModal(false)}
+        />
+      )}
     </Layout>
   );
 };
