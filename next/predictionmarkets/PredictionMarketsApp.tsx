@@ -12,6 +12,7 @@ import {
 import { asciiBytes32ToString } from "util/Bytes";
 import { Header, Icon, Message } from "semantic-ui-react";
 import { RegisterModal } from "./RegisterModal";
+import { CreateMarket } from "./CreateMarket";
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const web3 = web3Ref.current;
@@ -65,7 +66,13 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
           }
         />
       </p>
-      {isRegistered && <h1>Welcome, {decodedUserName}!</h1>}
+      {isRegistered && (
+        <>
+          <h1>Welcome, {decodedUserName}!</h1>
+          <CreateMarket web3Ref={web3Ref} firstAccount={firstAccount} />
+          <h2>Markets</h2>
+        </>
+      )}
       {showRegisterModal && (
         <RegisterModal
           web3Ref={web3Ref}
