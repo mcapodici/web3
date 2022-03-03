@@ -6,5 +6,6 @@
     "bankAccountFactoryAddress": "0xeF17859FEe1a0cfAF78AF70aA21bD47d0780c853",
     "predictionMarketsAddress": "0xe9E3779C6b29d29F92cA114Cf18a862B08Eaf47C"
   },
-  "ipfs": "https://ipfs.infura.io:5001/api/v0"
+  "ipfsApi": "https://ipfs.infura.io:5001/api/v0",
+  "ipfsGetTemplate": "https://{0}.ipfs.infura-ipfs.io/"
 }

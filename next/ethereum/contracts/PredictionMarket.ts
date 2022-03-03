@@ -6,6 +6,7 @@ import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
 import BN from "bn.js";
 import { rawListeners } from "process";
+import { contractMultiHashToCID } from "sitewide/IPFS";
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -116,6 +117,10 @@ export async function getMarkets(web3: Web3) {
         .getMarket(ev.returnValues.useraddress, ev.returnValues.index)
         .call();
       const username = await getUserNameWithCache(web3, ev.returnValues.useraddress);
+
+      const cid = IPFS.contractMultiHashToCID(r2.infoMultihash);
+      const marketInfo = JSON.parse(await IPFS.fetchText(cid));
+
       return {
         useraddress: ev.returnValues.useraddress,
         username: username,
@@ -125,6 +130,8 @@ export async function getMarkets(web3: Web3) {
         infoMultihash: r2.infoMultihash,
         numberOfBets: r2.numberOfBets,
         closesAt: new Date(r2.closesAt * 1000),
+        title: marketInfo.title,
+        description: marketInfo.description
       };
     })
   );

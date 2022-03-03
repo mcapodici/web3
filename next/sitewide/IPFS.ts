@@ -4,12 +4,22 @@ import { CID } from "multiformats/cid";
 
 export async function addText(text: string) {
   try {
-    const client = create(siteWideData.ipfs);
+    const client = create(siteWideData.ipfsApi);
     const added = await client.add(text);
     return CID.parse(added.path);
   } catch (ex: any) {
     throw new IPFSError(ex.message);
   }
+}
+
+export async function fetchText(cid: CID) {
+  const res = await fetch(
+    siteWideData.ipfsGetTemplate.replace("{0}", cid.toV1().toString())
+  );
+  const txt = await res.text();
+  console.log(siteWideData.ipfsGetTemplate.replace("{0}", cid.toV1().toString()));
+  console.log(txt);
+  return txt;
 }
 
 export class IPFSError extends Error {
@@ -18,6 +28,15 @@ export class IPFSError extends Error {
     this.name = "IPFSError";
   }
 }
+
+export const contractMultiHashToCID = (m: string) => {
+  const mutlihashBytes = Uint8Array.from(Buffer.from(m.substring(2), "hex"));
+  const headerBytes = Uint8Array.from([0x12, 0x20]);
+  const bytes = new Uint8Array(34);
+  bytes.set(headerBytes);
+  bytes.set(mutlihashBytes, 2);
+  return CID.decode(bytes);
+};
 
 export const getMultihashForContract = (cid: CID) =>
   "0x" + Buffer.from(cid.multihash.digest).toString("hex");

@@ -6,21 +6,21 @@ export interface IMarketsProps {
 
 const Markets = ({ markets }: IMarketsProps) => {
   return (
-    <div>
+    <Card.Group>
       {markets.map((market) => (
         <Card>
           <Image
-            src={`https://robohash.org/${market.username}`}
+            src={`https://robohash.org/${market.username}_${market.index}`}
             wrapped
             ui={false}
           />
           <Card.Content>
-            <Card.Header>Matthew</Card.Header>
+            <Card.Header>{market.title}</Card.Header>
             <Card.Meta>
-              <span className="date">Joined in 2015</span>
+              <span className="date">Created XYZ</span>
             </Card.Meta>
             <Card.Description>
-              Matthew is a musician living in Nashville.
+              {(market.description || '').substring(0, 100)}...
             </Card.Description>
           </Card.Content>
           <Card.Content extra>
@@ -31,7 +31,7 @@ const Markets = ({ markets }: IMarketsProps) => {
           </Card.Content>
         </Card>
       ))}
-    </div>
+    </Card.Group>
   );
 };
 
