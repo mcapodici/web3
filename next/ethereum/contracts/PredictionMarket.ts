@@ -114,10 +114,6 @@ async function getBets(web3: Web3, market: any) {
     )
   );
 
-  console.log('x'+market.numberOfBets);
-
-  console.log(bets);
-
   return {
     poolsize: new BN(market.pool).add(sumBN(bets.map(b => b.betsize))),
     bets: bets
@@ -131,6 +127,8 @@ export async function getMarkets(web3: Web3) {
     fromBlock: 1,
   });
 
+  console.log(events);
+
   const result = await Promise.all(
     events.map(async (ev) => {
       const r2 = await contract.methods
@@ -141,10 +139,14 @@ export async function getMarkets(web3: Web3) {
         ev.returnValues.useraddress
       );
 
+      const block = await web3.eth.getBlock(ev.blockNumber);
+
       const cid = IPFS.contractMultiHashToCID(r2.infoMultihash);
       const marketInfo = JSON.parse(await IPFS.fetchText(cid));
 
       let result: any = {
+        blockNumber: ev.blockNumber,
+        timestamp: new Date(Number(block.timestamp) * 1000),
         useraddress: ev.returnValues.useraddress,
         username: username,
         index: ev.returnValues.index,
