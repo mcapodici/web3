@@ -19,6 +19,7 @@ export const CreateMarket = ({
   const [question, setQuestion] = useState("");
   const [prob, setProb] = useState("50");
   const [ante, setAnte] = useState("10");
+  const [creatingMarket, setCreatingMarket] = useState(false);
   const { addAlert } = useContext(Context);
 
   const probError = !/^[1-9][0-9]?$/.test(prob);
@@ -31,6 +32,7 @@ export const CreateMarket = ({
     : undefined;
 
   const createMarket = async () => {
+    setCreatingMarket(true);
     try {
       await Contract.createMarket(
         web3Ref.current,
@@ -40,14 +42,21 @@ export const CreateMarket = ({
         Number(prob),
         new BN(ante).mul(new BN("1000000000000000000"))
       );
+      addAlert({
+        content: `Your market has been created.`,
+        header: "Market Created",
+        type: AlertType.Positive,
+        uniqueId: "predictionmarket.createmarket.success",
+      });
     } catch (ex: any) {
       addAlert({
         content: "Details from provider: " + ex.message,
         header: "Error occured during account creation",
         type: AlertType.Negative,
-        uniqueId: "createBankAccount.error",
+        uniqueId: "predictionmarket.createmarket.error",
       });
     }
+    setCreatingMarket(false);
   };
 
   return (
@@ -105,6 +114,7 @@ export const CreateMarket = ({
               content={errorMessage}
             />
             <Button
+              loading={creatingMarket}
               primary
               disabled={!!errorMessage && !!description}
               onClick={() => {
