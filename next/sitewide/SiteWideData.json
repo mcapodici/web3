@@ -7,5 +7,6 @@
     "predictionMarketsAddress": "0xe9E3779C6b29d29F92cA114Cf18a862B08Eaf47C"
   },
   "ipfsApi": "https://ipfs.infura.io:5001/api/v0",
-  "ipfsGetTemplate": "https://{0}.ipfs.infura-ipfs.io/"
+  "ipfsGetTemplate": "https://{0}.ipfs.infura-ipfs.io/",
+  "imageHashTemplate": "https://robohash.org/{0}"
 }

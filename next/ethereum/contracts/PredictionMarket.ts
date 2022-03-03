@@ -7,6 +7,7 @@ import * as IPFS from "sitewide/IPFS";
 import BN from "bn.js";
 import { rawListeners } from "process";
 import { contractMultiHashToCID } from "sitewide/IPFS";
+import { sum, sumBN } from "util/Array";
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -104,6 +105,25 @@ export async function createMarket(
     .send({ from: address });
 }
 
+// Market is return result of getMarket call
+async function getBets(web3: Web3, market: any) {
+  const contract = makeContractObject(web3);
+  const bets = await Promise.all(
+    Array(0).map((_, i) =>
+      contract.methods.getBet(market.useraddress, market.index, i).call()
+    )
+  );
+
+  console.log('x'+market.numberOfBets);
+
+  console.log(bets);
+
+  return {
+    poolsize: new BN(market.pool).add(sumBN(bets.map(b => b.betsize))),
+    bets: bets
+  }
+}
+
 export async function getMarkets(web3: Web3) {
   const contract = makeContractObject(web3);
   const events = await contract.getPastEvents("MarketCreated", {
@@ -116,12 +136,15 @@ export async function getMarkets(web3: Web3) {
       const r2 = await contract.methods
         .getMarket(ev.returnValues.useraddress, ev.returnValues.index)
         .call();
-      const username = await getUserNameWithCache(web3, ev.returnValues.useraddress);
+      const username = await getUserNameWithCache(
+        web3,
+        ev.returnValues.useraddress
+      );
 
       const cid = IPFS.contractMultiHashToCID(r2.infoMultihash);
       const marketInfo = JSON.parse(await IPFS.fetchText(cid));
 
-      return {
+      let result: any = {
         useraddress: ev.returnValues.useraddress,
         username: username,
         index: ev.returnValues.index,
@@ -133,6 +156,11 @@ export async function getMarkets(web3: Web3) {
         title: marketInfo.title,
         description: marketInfo.description
       };
+
+      const more = await getBets(web3, result);
+      result = { ...result, ...more };
+
+      return result;
     })
   );
 

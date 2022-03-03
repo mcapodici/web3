@@ -1,4 +1,6 @@
 import { Card, Icon, Image } from "semantic-ui-react";
+import siteWideData from 'sitewide/SiteWideData.json'
+import { toNumberOfTokens } from "util/BN";
 
 export interface IMarketsProps {
   markets: any[];
@@ -6,11 +8,11 @@ export interface IMarketsProps {
 
 const Markets = ({ markets }: IMarketsProps) => {
   return (
-    <Card.Group>
+    <Card.Group itemsPerRow={3}>
       {markets.map((market) => (
         <Card>
           <Image
-            src={`https://robohash.org/${market.username}_${market.index}`}
+            src={siteWideData.imageHashTemplate.replace('{0}', `${market.username}_${market.index}`)}
             wrapped
             ui={false}
           />
@@ -24,9 +26,15 @@ const Markets = ({ markets }: IMarketsProps) => {
             </Card.Description>
           </Card.Content>
           <Card.Content extra>
-            <a>
+            <a title="Money bet on market, including market maker">
+              <Icon name="money" />
+              {toNumberOfTokens(market.poolsize).toString()}
+            </a>
+            &nbsp;
+            &nbsp;
+            <a title="Number of bettors, including market maker">
               <Icon name="user" />
-              22 Friends
+              {market.bets.length + 1}
             </a>
           </Card.Content>
         </Card>
