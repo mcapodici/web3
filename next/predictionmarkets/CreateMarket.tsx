@@ -51,7 +51,7 @@ export const CreateMarket = ({
     } catch (ex: any) {
       addAlert({
         content: "Details from provider: " + ex.message,
-        header: "Error occured during account creation",
+        header: "Error occurred during account creation",
         type: AlertType.Negative,
         uniqueId: "predictionmarket.createmarket.error",
       });

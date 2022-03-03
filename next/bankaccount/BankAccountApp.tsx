@@ -57,7 +57,7 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
     } catch (ex: any) {
       addAlert({
         content: "Details from provider: " + ex.message,
-        header: "Error occured during account creation",
+        header: "Error occurred during account creation",
         type: AlertType.Negative,
         uniqueId: 'createBankAccount.error',
       });

@@ -55,7 +55,7 @@ const RegisterModal = ({
       : [
           {
             content: error,
-            header: "Error occured during registraion",
+            header: "Error occurred during registration",
             type: AlertType.Negative,
             uniqueId: "predictionmarket.registermodal.error",
           },
