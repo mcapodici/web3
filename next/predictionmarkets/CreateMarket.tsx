@@ -1,20 +1,25 @@
 import { useState } from "react";
 import { Button, Form, Input, Message } from "semantic-ui-react";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
+import  BN from 'bn.js';
 
-export const CreateMarket = ({ web3Ref, firstAccount }: Web3Props) => {
+export interface CreateMarketProps extends Web3Props {
+    funds: BN;
+}
+
+export const CreateMarket = ({ web3Ref, firstAccount, funds }: CreateMarketProps) => {
   const [description, setDescription] = useState("");
   const [question, setQuestion] = useState("");
   const [prob, setProb] = useState("50");
   const [ante, setAnte] = useState("10");
 
   const probError = !/^[1-9][0-9]?$/.test(prob);
-  const anteError = !/^[1-9][0-9]+?$/.test(ante);
+  const anteError = !/^[1-9][0-9]+?$/.test(ante) || new BN(ante) > funds;
 
   const errorMessage = probError
     ? "Initial probability must be a whole number between 1 and 99 inclusive."
     : anteError
-    ? "Market ante must be a whole number and at least 10"
+    ? "Market ante must be a whole number between 10 and your current available funds."
     : undefined;
 
   const createMarket = async () => {};

@@ -12,9 +12,6 @@ import * as MathUtil from "../util/Math";
 use(chaiSubset);
 use(solidity);
 
-
-// How do we convert something like 1000.32984239847 to big number?
-// if we multiply by
 const toFixed18 = (n) =>
   BigNumber.from(
     (n.toString().split(".")[0] || "") +

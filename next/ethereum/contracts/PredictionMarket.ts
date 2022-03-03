@@ -2,8 +2,9 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import contractJson from "./PredictionMarket.json";
 import siteWideData from "sitewide/SiteWideData.json";
-import { stringToAsciiBytes32 } from "util/Bytes";
+import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
+import BN from 'bn.js';
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -47,7 +48,7 @@ export async function register(
 }
 
 export interface UserInfo {
-  balance: string;
+  balance: BN;
   numberOfMarkets: string;
   userinfoMultihash: string;
   username: string;
@@ -58,7 +59,10 @@ export async function getUserInfo(
   address: string
 ): Promise<UserInfo> {
   const contract = makeContractObject(web3);
-  return await contract.methods.getUser(address).call();
+  const result = await contract.methods.getUser(address).call();
+  result.username = asciiBytes32ToString(result.username);
+  result.balance = web3.utils.toBN(web3.utils.fromWei(result.balance, 'ether')); // We use the same token ratios as Ether.
+  return result;
 }
 
 const zeroAddress = "0x0000000000000000000000000000000000000000";

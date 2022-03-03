@@ -13,6 +13,7 @@ import { asciiBytes32ToString } from "util/Bytes";
 import { Header, Icon, Message } from "semantic-ui-react";
 import { RegisterModal } from "./RegisterModal";
 import { CreateMarket } from "./CreateMarket";
+import BN from 'bn.js';
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const web3 = web3Ref.current;
@@ -29,10 +30,8 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
     init();
   }, [firstAccount]);
 
-  const decodedUserName = userInfo
-    ? asciiBytes32ToString(userInfo.username)
-    : "";
-  const isRegistered = decodedUserName != "";
+  const funds = userInfo?.balance || new BN('0');
+  const isRegistered = !!userInfo?.username;
 
   return (
     <Layout>
@@ -68,8 +67,9 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
       </p>
       {isRegistered && (
         <>
-          <h1>Welcome, {decodedUserName}!</h1>
-          <CreateMarket web3Ref={web3Ref} firstAccount={firstAccount} />
+          <h1>Welcome, {userInfo?.username}!</h1>
+          <p>Funds: <strong>P${funds.divRound(new BN(1)).toString()}</strong></p>
+          <CreateMarket web3Ref={web3Ref} firstAccount={firstAccount} funds={funds} />
           <h2>Markets</h2>
         </>
       )}
