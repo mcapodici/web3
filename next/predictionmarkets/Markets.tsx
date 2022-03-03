@@ -15,9 +15,9 @@ const Markets = ({ markets }: IMarketsProps) => {
             ui={false}
           />
           <Card.Content>
-            <Card.Header>{market.title}</Card.Header>
+            <Card.Header>{(market.title || 'Untitled').substring(0,50)}</Card.Header>
             <Card.Meta>
-              <span className="date">Created XYZ</span>
+              <span className="date">By {market.username}</span>
             </Card.Meta>
             <Card.Description>
               {(market.description || '').substring(0, 100)}...
