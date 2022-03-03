@@ -1,17 +1,25 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button, Form, Input, Message } from "semantic-ui-react";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
-import  BN from 'bn.js';
+import BN from "bn.js";
+import * as Contract from "ethereum/contracts/PredictionMarket";
+import { Context } from "sitewide/Context";
+import { AlertType } from "sitewide/alerts/AlertPanel";
 
 export interface CreateMarketProps extends Web3Props {
-    funds: BN;
+  funds: BN;
 }
 
-export const CreateMarket = ({ web3Ref, firstAccount, funds }: CreateMarketProps) => {
+export const CreateMarket = ({
+  web3Ref,
+  firstAccount,
+  funds,
+}: CreateMarketProps) => {
   const [description, setDescription] = useState("");
   const [question, setQuestion] = useState("");
   const [prob, setProb] = useState("50");
   const [ante, setAnte] = useState("10");
+  const { addAlert } = useContext(Context);
 
   const probError = !/^[1-9][0-9]?$/.test(prob);
   const anteError = !/^[1-9][0-9]+?$/.test(ante) || new BN(ante) > funds;
@@ -22,7 +30,25 @@ export const CreateMarket = ({ web3Ref, firstAccount, funds }: CreateMarketProps
     ? "Market ante must be a whole number between 10 and your current available funds."
     : undefined;
 
-  const createMarket = async () => {};
+  const createMarket = async () => {
+    try {
+      await Contract.createMarket(
+        web3Ref.current,
+        firstAccount,
+        question,
+        description,
+        Number(prob),
+        new BN(ante).mul(new BN("1000000000000000000"))
+      );
+    } catch (ex: any) {
+      addAlert({
+        content: "Details from provider: " + ex.message,
+        header: "Error occured during account creation",
+        type: AlertType.Negative,
+        uniqueId: "createBankAccount.error",
+      });
+    }
+  };
 
   return (
     <>
@@ -78,7 +104,9 @@ export const CreateMarket = ({ web3Ref, firstAccount, funds }: CreateMarketProps
               header="Please check the following"
               content={errorMessage}
             />
-            <Button primary disabled={!!errorMessage}
+            <Button
+              primary
+              disabled={!!errorMessage && !!description}
               onClick={() => {
                 createMarket();
               }}

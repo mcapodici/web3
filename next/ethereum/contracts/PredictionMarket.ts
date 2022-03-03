@@ -4,7 +4,7 @@ import contractJson from "./PredictionMarket.json";
 import siteWideData from "sitewide/SiteWideData.json";
 import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
-import BN from 'bn.js';
+import BN from "bn.js";
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -14,13 +14,6 @@ export function makeContractObject(web3: Web3) {
 }
 
 export const UsernameRegex = /^[A-Za-z_\-]+$/;
-
-export class IPFSError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "IPFSError";
-  }
-}
 
 export async function register(
   web3: Web3,
@@ -32,13 +25,9 @@ export async function register(
 
   let multihash = zero32Byte;
   if (bio && bio.length) {
-    try {
-      const payload = { bio };
-      const ipfsResult = await IPFS.addText(JSON.stringify(payload));
-      multihash = IPFS.getMultihashForContract(ipfsResult);
-    } catch (ex: any) {
-      throw new IPFSError(ex.message);
-    }
+    const payload = { bio };
+    const ipfsResult = await IPFS.addText(JSON.stringify(payload));
+    multihash = IPFS.getMultihashForContract(ipfsResult);
   }
 
   const contract = makeContractObject(web3);
@@ -61,7 +50,7 @@ export async function getUserInfo(
   const contract = makeContractObject(web3);
   const result = await contract.methods.getUser(address).call();
   result.username = asciiBytes32ToString(result.username);
-  result.balance = web3.utils.toBN(web3.utils.fromWei(result.balance, 'ether')); // We use the same token ratios as Ether.
+  result.balance = web3.utils.toBN(web3.utils.fromWei(result.balance, "ether")); // We use the same token ratios as Ether.
   return result;
 }
 
@@ -78,4 +67,27 @@ export async function getAccountForUsername(
     .usernames(stringToAsciiBytes32(username))
     .call();
   return res === zeroAddress ? undefined : res;
+}
+
+export async function createMarket(
+  web3: Web3,
+  address: string,
+  title: string,
+  description: string,
+  prob: number,
+  pool: BN
+) {
+  const contract = makeContractObject(web3);
+  const payload = { title, description };
+  const ipfsResult = await IPFS.addText(JSON.stringify(payload));
+  const multihash = IPFS.getMultihashForContract(ipfsResult);
+
+  await contract.methods
+    .createMarket(
+      multihash,
+      pool,
+      prob,
+      Math.floor(Date.now() / 1000) + 10000000
+    )
+    .send({ from: address });
 }
