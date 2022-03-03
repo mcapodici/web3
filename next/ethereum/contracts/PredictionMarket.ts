@@ -5,6 +5,7 @@ import siteWideData from "sitewide/SiteWideData.json";
 import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
 import BN from "bn.js";
+import { rawListeners } from "process";
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -41,6 +42,16 @@ export interface UserInfo {
   numberOfMarkets: string;
   userinfoMultihash: string;
   username: string;
+}
+
+const userNameCache: { [username: string]: string } = {};
+
+export async function getUserNameWithCache(web3: Web3, address: string) {
+  if (!userNameCache[address]) {
+    const ui = await getUserInfo(web3, address);
+    userNameCache[address] = ui.username;
+  }
+  return userNameCache[address];
 }
 
 export async function getUserInfo(
@@ -90,4 +101,33 @@ export async function createMarket(
       Math.floor(Date.now() / 1000) + 10000000
     )
     .send({ from: address });
+}
+
+export async function getMarkets(web3: Web3) {
+  const contract = makeContractObject(web3);
+  const events = await contract.getPastEvents("MarketCreated", {
+    filter: {},
+    fromBlock: 1,
+  });
+
+  const result = await Promise.all(
+    events.map(async (ev) => {
+      const r2 = await contract.methods
+        .getMarket(ev.returnValues.useraddress, ev.returnValues.index)
+        .call();
+      const username = await getUserNameWithCache(web3, ev.returnValues.useraddress);
+      return {
+        useraddress: ev.returnValues.useraddress,
+        username: username,
+        index: ev.returnValues.index,
+        pool: r2.pool,
+        prob: r2.prob,
+        infoMultihash: r2.infoMultihash,
+        numberOfBets: r2.numberOfBets,
+        closesAt: new Date(r2.closesAt * 1000),
+      };
+    })
+  );
+
+  return result;
 }

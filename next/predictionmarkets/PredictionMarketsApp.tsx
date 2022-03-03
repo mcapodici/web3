@@ -6,24 +6,25 @@ import Description from "./Description";
 import siteWideData from "sitewide/SiteWideData.json";
 import {
   getUserInfo,
-  register,
   UserInfo,
+  getMarkets
 } from "ethereum/contracts/PredictionMarket";
 import { asciiBytes32ToString } from "util/Bytes";
 import { Header, Icon, Message } from "semantic-ui-react";
 import { RegisterModal } from "./RegisterModal";
 import { CreateMarket } from "./CreateMarket";
 import BN from 'bn.js';
+import { Markets } from "./Markets";
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const web3 = web3Ref.current;
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [markets, setMarkets] = useState<any[]>([]);
 
   const init = async () => {
-    const usr = await getUserInfo(web3, firstAccount);
-    console.log("x" + asciiBytes32ToString(usr.username) + "x");
-    setUserInfo(usr);
+    getUserInfo(web3, firstAccount).then(setUserInfo);
+    getMarkets(web3).then(setMarkets);
   };
 
   useEffect(() => {
@@ -71,6 +72,7 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
           <p>Funds: <strong>P${funds.divRound(new BN(1)).toString()}</strong></p>
           <CreateMarket web3Ref={web3Ref} firstAccount={firstAccount} funds={funds} />
           <h2>Markets</h2>
+          <Markets markets={markets} />
         </>
       )}
       {showRegisterModal && (
