@@ -59,7 +59,6 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
       )}
       {isRegistered || (
         <>
-          <h1>Register to create prediciton markets</h1>
           <RegisterInfo
             onClick={(event) => {
               event.preventDefault();
@@ -84,6 +83,7 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
 
 const RegisterInfo = (props: { onClick: (e: any) => void }) => (
   <>
+    <h2>Register to create prediciton markets</h2>
     <p>
       Click the buton to register as a user and bet on prediction markets and
       create your own markets. <i>It just takes a second!</i>
