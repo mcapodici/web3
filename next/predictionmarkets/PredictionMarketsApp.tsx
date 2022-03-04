@@ -7,13 +7,12 @@ import siteWideData from "sitewide/SiteWideData.json";
 import {
   getUserInfo,
   UserInfo,
-  getMarkets
+  getMarkets,
 } from "ethereum/contracts/PredictionMarket";
-import { asciiBytes32ToString } from "util/Bytes";
-import { Header, Icon, Message } from "semantic-ui-react";
+import { Button, Header, Icon, Message } from "semantic-ui-react";
 import { RegisterModal } from "./RegisterModal";
 import { CreateMarket } from "./CreateMarket";
-import BN from 'bn.js';
+import BN from "bn.js";
 import { Markets } from "./Markets";
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
@@ -31,32 +30,11 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
     init();
   }, [firstAccount]);
 
-  const funds = userInfo?.balance || new BN('0');
+  const funds = userInfo?.balance || new BN("0");
   const isRegistered = !!userInfo?.username;
 
   return (
     <Layout>
-      {isRegistered || (
-        <Message info icon>
-          <Icon name="info circle" />
-          <div>
-            <Header>Be A Master Predictor!</Header>
-            <p>
-              <a
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault();
-                  setShowRegisterModal(true);
-                }}
-              >
-                Click here
-              </a>{" "}
-              to register as a user and bet on prediction markets and create
-              your own markets.
-            </p>
-          </div>
-        </Message>
-      )}
       <Description />
       <p>
         Note that this is using the contract deployed to{" "}
@@ -69,12 +47,30 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
       {isRegistered && (
         <>
           <h1>Welcome, {userInfo?.username}!</h1>
-          <p>Funds: <strong>P${funds.divRound(new BN(1)).toString()}</strong></p>
-          <CreateMarket web3Ref={web3Ref} firstAccount={firstAccount} funds={funds} />
-          <h2>Markets</h2>
-          <Markets markets={markets} />
+          <p>
+            Funds: <strong>P${funds.divRound(new BN(1)).toString()}</strong>
+          </p>
+          <CreateMarket
+            web3Ref={web3Ref}
+            firstAccount={firstAccount}
+            funds={funds}
+          />
         </>
       )}
+      {isRegistered || (
+        <>
+          <h1>Register to create prediciton markets</h1>
+          <RegisterInfo
+            onClick={(event) => {
+              event.preventDefault();
+              setShowRegisterModal(true);
+            }}
+          />
+        </>
+      )}
+      <h2>Markets</h2>
+      <Markets markets={markets} />
+
       {showRegisterModal && (
         <RegisterModal
           web3Ref={web3Ref}
@@ -85,5 +81,19 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
     </Layout>
   );
 };
+
+const RegisterInfo = (props: { onClick: (e: any) => void }) => (
+  <>
+    <p>
+      Click the buton to register as a user and bet on prediction markets and
+      create your own markets. <i>It just takes a second!</i>
+    </p>
+    <p>
+      <Button primary onClick={props.onClick}>
+        Register
+      </Button>
+    </p>
+  </>
+);
 
 export default PredictionMarketsApp;
