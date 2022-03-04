@@ -22,8 +22,14 @@ export const CreateMarket = ({
   const [creatingMarket, setCreatingMarket] = useState(false);
   const { addAlert } = useContext(Context);
 
-  const probError = !/^[1-9][0-9]?$/.test(prob);
-  const anteError = !/^[1-9][0-9]+?$/.test(ante) || new BN(ante) > funds;
+  const intPattern = /^[0-9]+$/
+
+  const probError = !intPattern.test(prob) || Number(prob) < 1 || Number(prob) > 99;
+  const anteBN = new BN(ante);
+  const anteError = !intPattern.test(ante) || anteBN.lt(new BN(10)) || anteBN.gt(funds);
+
+  console.log('funds' + funds.toString())
+  console.log('ante' + ante.toString())
 
   const errorMessage = probError
     ? "Initial probability must be a whole number between 1 and 99 inclusive."
