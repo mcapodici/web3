@@ -29,7 +29,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
 
   const innards = market ? (
     <div>
-        <h1>Market</h1>
+      <h1>Market</h1>
       <Card.Group itemsPerRow={1}>
         <Card>
           <Card.Content>
@@ -50,9 +50,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
               <Card.Meta>
                 <span className="date">By {market.username}</span>
               </Card.Meta>
-              <Card.Description>
-                {market.description}
-              </Card.Description>
+              <Card.Description>{market.description}</Card.Description>
             </div>
           </Card.Content>
           <Card.Content extra>
@@ -78,6 +76,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
               style={{ marginRight: "10px" }}
             >
               <Icon name="clock" color="green" />
+              Created{" "}
               {formatDistance(new Date(market.timestamp), new Date(), {
                 addSuffix: true,
               })}
@@ -91,8 +90,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
               }
             >
               <Icon name="clock" color="black" />
+              Closes{" "}
               {formatDistance(new Date(market.closesAt), new Date(), {
-                addSuffix: true,
+                addSuffix: true
               })}
             </a>
           </Card.Content>
