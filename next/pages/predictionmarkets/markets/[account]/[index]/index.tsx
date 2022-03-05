@@ -38,6 +38,10 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     setMarket(m);
   };
 
+  const placeBet = async(yes: boolean) => {
+    
+  };
+
   useEffect(() => {
     loadMarket();
     getUserInfo(web3, firstAccount).then(setUserInfo);
@@ -136,10 +140,13 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                   <Button
                     style={{ marginLeft: "5px", marginRight: "5px" }}
                     color="green"
+                    onClick={() => placeBet(true)}
                   >
                     Bet YES
                   </Button>
-                  <Button color="pink">Bet NO</Button>
+                  <Button 
+                  color="pink"
+                  onClick={() => placeBet(false)}>Bet NO</Button>
                 </>
               }
             ></Input>
