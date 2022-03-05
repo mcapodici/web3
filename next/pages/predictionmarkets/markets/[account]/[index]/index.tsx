@@ -44,7 +44,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                 ui={true}
                 circular={true}
               />
-              {(market.title || "Untitled").substring(0, 50)}
+              {(market.title || "Untitled")}
             </Card.Header>
             <div>
               <Card.Meta>
