@@ -126,8 +126,16 @@ export async function getMarket(
   index: string
 ) {
   const m = await getMarketInternal(web3, useraddress, index);
-  m.blockNumber = 0;
-  m.timestamp = new Date(); // TODO query to get the event to fill these in
+  
+  const contract = makeContractObject(web3);
+  const events = await contract.getPastEvents("MarketCreated", {
+    filter: { useraddress, index },
+    fromBlock: 1,
+  });
+  const ev = events[0];
+  const block = await web3.eth.getBlock(ev.blockNumber);
+  m.blockNumber = ev.blockNumber;
+  m.timestamp = new Date(Number(block.timestamp) * 1000);
   return m;
 }
 
