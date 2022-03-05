@@ -115,9 +115,46 @@ async function getBets(web3: Web3, market: any) {
   );
 
   return {
-    poolsize: new BN(market.pool).add(sumBN(bets.map(b => b.betsize))),
-    bets: bets
-  }
+    poolsize: new BN(market.pool).add(sumBN(bets.map((b) => b.betsize))),
+    bets: bets,
+  };
+}
+
+export async function getMarket(
+  web3: Web3,
+  useraddress: string,
+  index: string
+) {
+  const contract = makeContractObject(web3);
+  const r2 = await contract.methods.getMarket(useraddress, index).call();
+  const username = await getUserNameWithCache(web3, useraddress);
+
+  const blockNumber = 0;
+
+  const block = await web3.eth.getBlock(blockNumber);
+
+  const cid = IPFS.contractMultiHashToCID(r2.infoMultihash);
+  const marketInfo = JSON.parse(await IPFS.fetchText(cid));
+
+  let result: any = {
+    blockNumber: blockNumber,
+    timestamp: new Date(Number(block.timestamp) * 1000),
+    useraddress: useraddress,
+    username: username,
+    index: index,
+    pool: r2.pool,
+    prob: r2.prob,
+    infoMultihash: r2.infoMultihash,
+    numberOfBets: r2.numberOfBets,
+    closesAt: new Date(r2.closesAt * 1000),
+    title: marketInfo.title,
+    description: marketInfo.description,
+  };
+
+  const more = await getBets(web3, result);
+  result = { ...result, ...more };
+
+  return result;
 }
 
 export async function getMarkets(web3: Web3) {
@@ -130,40 +167,13 @@ export async function getMarkets(web3: Web3) {
   console.log(events);
 
   const result = await Promise.all(
-    events.map(async (ev) => {
-      const r2 = await contract.methods
-        .getMarket(ev.returnValues.useraddress, ev.returnValues.index)
-        .call();
-      const username = await getUserNameWithCache(
+    events.map((ev) =>
+      getMarket(
         web3,
-        ev.returnValues.useraddress
-      );
-
-      const block = await web3.eth.getBlock(ev.blockNumber);
-
-      const cid = IPFS.contractMultiHashToCID(r2.infoMultihash);
-      const marketInfo = JSON.parse(await IPFS.fetchText(cid));
-
-      let result: any = {
-        blockNumber: ev.blockNumber,
-        timestamp: new Date(Number(block.timestamp) * 1000),
-        useraddress: ev.returnValues.useraddress,
-        username: username,
-        index: ev.returnValues.index,
-        pool: r2.pool,
-        prob: r2.prob,
-        infoMultihash: r2.infoMultihash,
-        numberOfBets: r2.numberOfBets,
-        closesAt: new Date(r2.closesAt * 1000),
-        title: marketInfo.title,
-        description: marketInfo.description
-      };
-
-      const more = await getBets(web3, result);
-      result = { ...result, ...more };
-
-      return result;
-    })
+        ev.returnValues.useraddress,
+        ev.returnValues.index
+      )
+    )
   );
 
   return result;

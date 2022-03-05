@@ -17,7 +17,7 @@ const Markets = ({ markets }: IMarketsProps) => {
         .sort((a, b) => b.blockNumber - a.blockNumber)
         .map((market) => (
           <Link
-            href={`/predictionmarkets/markets/${market.useraddress}_${market.index}`}
+            href={`/predictionmarkets/markets/${market.useraddress}/${market.index}`}
           >
             <Card>
               <Card.Content>
