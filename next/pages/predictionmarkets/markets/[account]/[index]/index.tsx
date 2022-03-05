@@ -5,13 +5,15 @@ import { useEffect, useState } from "react";
 import { getMarket } from "ethereum/contracts/PredictionMarket";
 import Layout from "sitewide/Layout";
 import { formatDistance } from "date-fns";
-import { Card, Icon, Image } from "semantic-ui-react";
+import { Button, Card, Form, Icon, Image, Input } from "semantic-ui-react";
 import { toNumberOfTokens } from "util/BN";
 import siteWideData from "sitewide/SiteWideData.json";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const [market, setMarket] = useState<any>();
+  const [betAmount, setBetAmount] = useState("");
   const r = useRouter();
+  const betFormErrorMessage = false;
 
   const loadMarket = async () => {
     const { account, index } = r.query;
@@ -44,7 +46,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                 ui={true}
                 circular={true}
               />
-              {(market.title || "Untitled")}
+              {market.title || "Untitled"}
             </Card.Header>
             <div>
               <Card.Meta>
@@ -92,12 +94,37 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
               <Icon name="clock" color="black" />
               Closes{" "}
               {formatDistance(new Date(market.closesAt), new Date(), {
-                addSuffix: true
+                addSuffix: true,
               })}
             </a>
           </Card.Content>
         </Card>
       </Card.Group>
+      <h2>Bets</h2>
+      {!market.bets.length && (
+        <p>
+          <strong>No Bets!</strong> Other than the ante, there are no bets yet
+          on this market. Maybe you make the first one?
+        </p>
+      )}
+
+      <h2>Place your bet</h2>
+      <Form error={!!betFormErrorMessage}>
+        <Form.Field>
+          <Input
+            label="P$"
+            labelPosition="left"
+            value={betAmount}
+            onChange={(event) => setBetAmount(event.target.value)}
+            action={
+              <>
+                <Button style={{marginLeft:'5px', marginRight:'5px'}} color="green">Bet YES</Button>
+                <Button color="pink">Bet NO</Button>
+              </>
+            }
+          ></Input>
+        </Form.Field>
+      </Form>
     </div>
   ) : (
     <p>Loading...</p>
