@@ -17,8 +17,6 @@ export async function fetchText(cid: CID) {
     siteWideData.ipfsGetTemplate.replace("{0}", cid.toV1().toString())
   );
   const txt = await res.text();
-  console.log(siteWideData.ipfsGetTemplate.replace("{0}", cid.toV1().toString()));
-  console.log(txt);
   return txt;
 }
 

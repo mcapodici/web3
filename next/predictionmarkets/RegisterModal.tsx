@@ -28,7 +28,6 @@ const RegisterModal = ({
         web3Ref.current,
         username
       );
-      console.log(existing);
       if (existing) {
         setError("That username is already in use.");
         return;

@@ -20,15 +20,12 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
       account as string,
       index as string
     );
-    console.log(m);
     setMarket(m);
   };
 
   useEffect(() => {
     loadMarket();
-  });
-
-  console.log(r.query);
+  }, []);
 
   const innards = market ? (
     <div>

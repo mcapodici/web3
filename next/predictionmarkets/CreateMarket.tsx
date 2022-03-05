@@ -28,9 +28,6 @@ export const CreateMarket = ({
   const anteBN = new BN(ante);
   const anteError = !intPattern.test(ante) || anteBN.lt(new BN(10)) || anteBN.gt(funds);
 
-  console.log('funds' + funds.toString())
-  console.log('ante' + ante.toString())
-
   const errorMessage = probError
     ? "Initial probability must be a whole number between 1 and 99 inclusive."
     : anteError

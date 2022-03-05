@@ -125,28 +125,33 @@ export async function getMarket(
   useraddress: string,
   index: string
 ) {
+  const m = await getMarketInternal(web3, useraddress, index);
+  m.blockNumber = 0;
+  m.timestamp = new Date(); // TODO query to get the event to fill these in
+  return m;
+}
+
+async function getMarketInternal(
+  web3: Web3,
+  useraddress: string,
+  index: string
+) {
   const contract = makeContractObject(web3);
-  const r2 = await contract.methods.getMarket(useraddress, index).call();
+  const m = await contract.methods.getMarket(useraddress, index).call();
   const username = await getUserNameWithCache(web3, useraddress);
 
-  const blockNumber = 0;
-
-  const block = await web3.eth.getBlock(blockNumber);
-
-  const cid = IPFS.contractMultiHashToCID(r2.infoMultihash);
+  const cid = IPFS.contractMultiHashToCID(m.infoMultihash);
   const marketInfo = JSON.parse(await IPFS.fetchText(cid));
 
   let result: any = {
-    blockNumber: blockNumber,
-    timestamp: new Date(Number(block.timestamp) * 1000),
     useraddress: useraddress,
     username: username,
     index: index,
-    pool: r2.pool,
-    prob: r2.prob,
-    infoMultihash: r2.infoMultihash,
-    numberOfBets: r2.numberOfBets,
-    closesAt: new Date(r2.closesAt * 1000),
+    pool: m.pool,
+    prob: m.prob,
+    infoMultihash: m.infoMultihash,
+    numberOfBets: m.numberOfBets,
+    closesAt: new Date(m.closesAt * 1000),
     title: marketInfo.title,
     description: marketInfo.description,
   };
@@ -164,16 +169,19 @@ export async function getMarkets(web3: Web3) {
     fromBlock: 1,
   });
 
-  console.log(events);
-
   const result = await Promise.all(
-    events.map((ev) =>
-      getMarket(
+    events.map(async (ev) => {
+      const m = await getMarketInternal(
         web3,
         ev.returnValues.useraddress,
         ev.returnValues.index
-      )
-    )
+      );
+      const block = await web3.eth.getBlock(ev.blockNumber);
+
+      m.blockNumber = ev.blockNumber;
+      m.timestamp = new Date(Number(block.timestamp) * 1000);
+      return m;
+    })
   );
 
   return result;
