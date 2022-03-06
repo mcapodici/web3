@@ -48,11 +48,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const loadMarket = async () => {
     const m = await getMarket(web3, marketaddress, marketindex);
     setMarket(m);
-    console.log(m.bets);
   };
 
   const placeBet = async (yes: boolean) => {
-    console.log("placebet called");
     const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
       marketaddress,
@@ -60,8 +58,6 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
       BNToken.fromNumTokens(betAmount),
       yes
     );
-
-    console.log("numberOfShares" + numberOfShares.asSand().toString());
 
     await makeBet(
       web3,
@@ -110,7 +106,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                           margin: "0 0 0.2em 0",
                         }}
                       >
-                        {(market.impliedProb1).toFixed(0)}%
+                        {market.impliedProb1.toFixed(0)}%
                       </p>
                       <p
                         style={{
@@ -179,44 +175,36 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
         </Card>
       </Card.Group>
       <h2>Bets</h2>
-      {!market.bets.length && (
-        <p>
-          <strong>No Bets!</strong> Other than the ante, there are no bets yet
-          on this market. Maybe you make the first one?
-        </p>
-      )}
-      {market.bets.length && (
-        <Table>
-          <Table.Header>
-            <Table.HeaderCell>User</Table.HeaderCell>
-            <Table.HeaderCell>Outcome</Table.HeaderCell>
-            <Table.HeaderCell>Bet Amount</Table.HeaderCell>
-            <Table.HeaderCell>Shares</Table.HeaderCell>
-          </Table.Header>
+      <Table>
+        <Table.Header>
+          <Table.HeaderCell>User</Table.HeaderCell>
+          <Table.HeaderCell>Outcome</Table.HeaderCell>
+          <Table.HeaderCell>Bet Amount</Table.HeaderCell>
+          <Table.HeaderCell>Shares</Table.HeaderCell>
+        </Table.Header>
+        <Table.Row>
+          <Table.Cell>{market.username}</Table.Cell>
+          <Table.Cell>ANTE - YES</Table.Cell>
+          <Table.Cell>{market.ante1.toNumTokens(4)}</Table.Cell>
+          <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell>{market.username}</Table.Cell>
+          <Table.Cell>ANTE - NO</Table.Cell>
+          <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
+          <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
+        </Table.Row>
+        {market.bets.map((b) => (
           <Table.Row>
-            <Table.Cell>{market.username}</Table.Cell>
-            <Table.Cell>ANTE - YES</Table.Cell>
-            <Table.Cell>{market.ante1.toNumTokens(4)}</Table.Cell>
-            <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
+            <Table.Cell>{b.username}</Table.Cell>
+            <Table.Cell>
+              {b.outcome.toString() == "1" ? "YES" : "NO"}
+            </Table.Cell>
+            <Table.Cell>{b.betsize.toNumTokens(4)}</Table.Cell>
+            <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
           </Table.Row>
-          <Table.Row>
-            <Table.Cell>{market.username}</Table.Cell>
-            <Table.Cell>ANTE - NO</Table.Cell>
-            <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
-            <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
-          </Table.Row>
-          {market.bets.map((b) => (
-            <Table.Row>
-              <Table.Cell>{b.username}</Table.Cell>
-              <Table.Cell>
-                {b.outcome.toString() == "1" ? "YES" : "NO"}
-              </Table.Cell>
-              <Table.Cell>{b.betsize.toNumTokens(4)}</Table.Cell>
-              <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
-            </Table.Row>
-          ))}
-        </Table>
-      )}
+        ))}
+      </Table>
 
       <h2>Place your bet</h2>
       {isRegistered ? (

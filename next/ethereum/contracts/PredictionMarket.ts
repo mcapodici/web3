@@ -204,13 +204,15 @@ async function getBets(
   market: IMarketInfo
 ): Promise<{ poolsize: BNToken; bets: Bet[] }> {
   const contract = makeContractObject(web3);
+  console.log('bets'+ market.numberOfBets.toNumber());
   const bets = await Promise.all(
-    Array(market.numberOfBets).map((_, i) =>
+    Array(market.numberOfBets.toNumber()).fill(0).map((_, i) => 
       contract.methods.getBet(market.useraddress, market.index, i).call()
     )
   );
 
   const betsWithUsername = await Promise.all(bets.map(async bet => {
+    console.log(bets);
     const username = await getUserNameWithCache(web3, bet.useraddress);
     return { ...bet, username };
   }))
@@ -267,7 +269,7 @@ async function getMarketInternal(
     pool: bt(m.pool),
     prob: b(m.prob),
     infoMultihash: m.infoMultihash,
-    numberOfBets: m.numberOfBets,
+    numberOfBets: new BN(m.numberOfBets),
     closesAt: new Date(m.closesAt * 1000),
     title: marketInfo.title,
     description: marketInfo.description,
@@ -291,6 +293,7 @@ async function getMarketInternal(
   market.ante1 = BNToken.fromSand(market.pool.asSand().mul(market.prob).div(new BN(100)));
   
   const more = await getBets(web3, market);
+  console.log(more);
   market = { ...market, ...more };
 
   let moneyOn0 = market.ante0.asSand();
@@ -298,7 +301,6 @@ async function getMarketInternal(
   let sharesOf0 = BNToken.fromNumTokens('1').asSand();
   let sharesOf1 = BNToken.fromNumTokens('1').asSand();
 
-  console.log([moneyOn0.toString(), moneyOn1.toString(), sharesOf0.toString(), sharesOf1.toString()])
   for (let bet of market.bets) {
     moneyOn0 = moneyOn0.add(bet.outcome.eq(b(0)) ? bet.betsize.asSand() : b(0));
     moneyOn1 = moneyOn1.add(bet.outcome.eq(b(1)) ? bet.betsize.asSand() : b(0));
@@ -308,7 +310,6 @@ async function getMarketInternal(
     sharesOf1 = sharesOf1.add(
       bet.outcome.eq(b(1)) ? bet.numberOfShares.asSand() : b(0)
     );
-    console.log([moneyOn0.toString(), moneyOn1.toString(), sharesOf0.toString(), sharesOf1.toString()])
   }
 
   market.moneyOn0 = BNToken.fromSand(moneyOn0);
