@@ -5,9 +5,10 @@ import BN from "bn.js";
 import * as Contract from "ethereum/contracts/PredictionMarket";
 import { Context } from "sitewide/Context";
 import { AlertType } from "sitewide/alerts/AlertPanel";
+import { BNToken } from "util/BN";
 
 export interface CreateMarketProps extends Web3Props {
-  funds: BN;
+  funds: BNToken;
 }
 
 export const CreateMarket = ({
@@ -25,8 +26,8 @@ export const CreateMarket = ({
   const intPattern = /^[0-9]+$/
 
   const probError = !intPattern.test(prob) || Number(prob) < 1 || Number(prob) > 99;
-  const anteBN = new BN(ante);
-  const anteError = !intPattern.test(ante) || anteBN.lt(new BN(10)) || anteBN.gt(funds);
+  const anteBN =  BNToken.fromNumTokens(intPattern.test(ante) ? ante : '0');
+  const anteError = Number(anteBN.toNumTokens()) < 10 || Number(anteBN.toNumTokens()) > Number(funds.toNumTokens());
 
   const errorMessage = probError
     ? "Initial probability must be a whole number between 1 and 99 inclusive."

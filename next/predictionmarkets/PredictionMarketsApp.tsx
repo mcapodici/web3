@@ -14,6 +14,7 @@ import { RegisterModal } from "./RegisterModal";
 import { CreateMarket } from "./CreateMarket";
 import BN from "bn.js";
 import { Markets } from "./Markets";
+import { BNToken } from "util/BN";
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const web3 = web3Ref.current;
@@ -30,7 +31,7 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
     init();
   }, [firstAccount]);
 
-  const funds = userInfo?.balance || new BN("0");
+  const funds = userInfo?.balance || BNToken.fromNumTokens('0');
   const isRegistered = !!userInfo?.username;
 
   return (
@@ -48,7 +49,7 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
         <>
           <h1>Welcome, {userInfo?.username}!</h1>
           <p>
-            Funds: <strong>P${funds.divRound(new BN(1)).toString()}</strong>
+            Funds: <strong>P${funds.toNumTokens(4)}</strong>
           </p>
           <CreateMarket
             web3Ref={web3Ref}

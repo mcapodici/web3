@@ -10,7 +10,7 @@ import { calculateSharesForBetAmount } from "util/Math";
 import { b, BNToken, bt } from "util/BN";
 
 export interface UserInfo {
-  balance: string;
+  balance: BNToken;
   numberOfMarkets: string;
   userinfoMultihash: string;
   username: string;
@@ -154,7 +154,7 @@ export async function getUserInfo(
 
   return {
    username: asciiBytes32ToString(result.username),
-   balance: BNToken.fromSand(new BN(result.balance)).toNumTokens(4),
+   balance: BNToken.fromSand(new BN(result.balance)),
    numberOfMarkets: result.numberOfMarkets,
    userinfoMultihash: result.userinfoMultihash
   }
