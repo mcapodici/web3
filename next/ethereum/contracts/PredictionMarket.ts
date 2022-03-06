@@ -99,32 +99,13 @@ export async function calculateNumbeOfSharesForMarket(
   isYes: boolean
 ) {
   const market = await getMarket(web3, marketAddress, marketIndex);
-
-  let moneyOn0 = market.pool.asSand().mul(b(100).sub(market.prob));
-  let moneyOn1 = market.pool.asSand().mul(market.prob);
-  let sharesOf0 = BNToken.fromNumTokens('1').asSand();
-  let sharesOf1 = BNToken.fromNumTokens('1').asSand();
   let outcome = isYes ? 1 : 0;
 
-  for (let bet of market.bets) {
-    moneyOn0 = moneyOn0.add(bet.outcome.eq(b(0)) ? bet.betsize.asSand() : b(0));
-    moneyOn1 = moneyOn1.add(bet.outcome.eq(b(1)) ? bet.betsize.asSand() : b(0));
-    sharesOf0 = sharesOf0.add(
-      bet.outcome.eq(b(0)) ? bet.numberOfShares.asSand() : b(0)
-    );
-    sharesOf1 = sharesOf1.add(
-      bet.outcome.eq(b(1)) ? bet.numberOfShares.asSand() : b(0)
-    );
-  }
-
-  // What is the convention as to what kind of numbers - e.g. contract format (1 = 10 ** 18). I think it shold be that
-  // way. We should have a convention / naeme for anything stored this way on the front end as there is a mix ( probably)
-  // have this convention in the contract too. Might need to change calculateSharesForBetAmount to work with BN??
   return calculateSharesForBetAmount(
-    BNToken.fromSand(moneyOn0),
-    BNToken.fromSand(moneyOn1),
-    BNToken.fromSand(sharesOf0),
-    BNToken.fromSand(sharesOf1),
+    market.moneyOn0,
+    market.moneyOn1,
+    market.sharesOf0,
+    market.sharesOf1,
     outcome,
     betAmount
   );
@@ -138,10 +119,10 @@ export async function makeBet(
   numberOfShares: BN,
   isYes: boolean
 ) {
-//  console.log({a:marketAddress, b:marketIndex, c:numberOfShares.toString(), d:isYes ? 1 : 0, e:bettorAddess});
+  //  console.log({a:marketAddress, b:marketIndex, c:numberOfShares.toString(), d:isYes ? 1 : 0, e:bettorAddess});
   const contract = makeContractObject(web3);
   await contract.methods
-    .makeBet(marketAddress, marketIndex, numberOfShares, isYes ?'1' :'0')
+    .makeBet(marketAddress, marketIndex, numberOfShares, isYes ? "1" : "0")
     .send({ from: bettorAddess });
 }
 
@@ -153,11 +134,11 @@ export async function getUserInfo(
   const result = await contract.methods.getUser(address).call();
 
   return {
-   username: asciiBytes32ToString(result.username),
-   balance: BNToken.fromSand(new BN(result.balance)),
-   numberOfMarkets: result.numberOfMarkets,
-   userinfoMultihash: result.userinfoMultihash
-  }
+    username: asciiBytes32ToString(result.username),
+    balance: BNToken.fromSand(new BN(result.balance)),
+    numberOfMarkets: result.numberOfMarkets,
+    userinfoMultihash: result.userinfoMultihash,
+  };
 }
 
 const zeroAddress = "0x0000000000000000000000000000000000000000";
@@ -204,18 +185,22 @@ async function getBets(
   market: IMarketInfo
 ): Promise<{ poolsize: BNToken; bets: Bet[] }> {
   const contract = makeContractObject(web3);
-  console.log('bets'+ market.numberOfBets.toNumber());
+  console.log("bets" + market.numberOfBets.toNumber());
   const bets = await Promise.all(
-    Array(market.numberOfBets.toNumber()).fill(0).map((_, i) => 
-      contract.methods.getBet(market.useraddress, market.index, i).call()
-    )
+    Array(market.numberOfBets.toNumber())
+      .fill(0)
+      .map((_, i) =>
+        contract.methods.getBet(market.useraddress, market.index, i).call()
+      )
   );
 
-  const betsWithUsername = await Promise.all(bets.map(async bet => {
-    console.log(bets);
-    const username = await getUserNameWithCache(web3, bet.useraddress);
-    return { ...bet, username };
-  }))
+  const betsWithUsername = await Promise.all(
+    bets.map(async (bet) => {
+      console.log(bets);
+      const username = await getUserNameWithCache(web3, bet.useraddress);
+      return { ...bet, username };
+    })
+  );
 
   return {
     poolsize: BNToken.fromSand(
@@ -277,29 +262,33 @@ async function getMarketInternal(
     bets: [], // Filled in after
     blockNumber: 0, // Filled in after
     timestamp: new Date(0), // Filled in after
-    ante0: BNToken.fromNumTokens('0'), // Filled in after
-    ante1: BNToken.fromNumTokens('0'), // Filled in after
-    anteShares0: BNToken.fromNumTokens('1'),
-    anteShares1: BNToken.fromNumTokens('1'),
+    ante0: BNToken.fromNumTokens("0"), // Filled in after
+    ante1: BNToken.fromNumTokens("0"), // Filled in after
+    anteShares0: BNToken.fromNumTokens("1"),
+    anteShares1: BNToken.fromNumTokens("1"),
     impliedProb0: 50, // Filled in after
     impliedProb1: 50, // Filled in after
-    moneyOn0: BNToken.fromNumTokens('0'),
-    moneyOn1: BNToken.fromNumTokens('0'),
-    sharesOf0: BNToken.fromNumTokens('0'),
-    sharesOf1: BNToken.fromNumTokens('0'),
+    moneyOn0: BNToken.fromNumTokens("0"),
+    moneyOn1: BNToken.fromNumTokens("0"),
+    sharesOf0: BNToken.fromNumTokens("0"),
+    sharesOf1: BNToken.fromNumTokens("0"),
   };
 
-  market.ante0 = BNToken.fromSand(market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100)));
-  market.ante1 = BNToken.fromSand(market.pool.asSand().mul(market.prob).div(new BN(100)));
-  
+  market.ante0 = BNToken.fromSand(
+    market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100))
+  );
+  market.ante1 = BNToken.fromSand(
+    market.pool.asSand().mul(market.prob).div(new BN(100))
+  );
+
   const more = await getBets(web3, market);
   console.log(more);
   market = { ...market, ...more };
 
   let moneyOn0 = market.ante0.asSand();
   let moneyOn1 = market.ante1.asSand();
-  let sharesOf0 = BNToken.fromNumTokens('1').asSand();
-  let sharesOf1 = BNToken.fromNumTokens('1').asSand();
+  let sharesOf0 = BNToken.fromNumTokens("1").asSand();
+  let sharesOf1 = BNToken.fromNumTokens("1").asSand();
 
   for (let bet of market.bets) {
     moneyOn0 = moneyOn0.add(bet.outcome.eq(b(0)) ? bet.betsize.asSand() : b(0));
@@ -321,7 +310,6 @@ async function getMarketInternal(
   const m1n1 = moneyOn1.mul(sharesOf1);
   market.impliedProb0 = m0n0.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
   market.impliedProb1 = m1n1.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
-
 
   return market;
 }
