@@ -5,11 +5,51 @@ import siteWideData from "sitewide/SiteWideData.json";
 import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
 import BN from "bn.js";
-import { rawListeners } from "process";
-import { contractMultiHashToCID } from "sitewide/IPFS";
-import { sum, sumBN } from "util/Array";
+import { sumBN } from "util/Array";
 import { calculateSharesForBetAmount } from "util/Math";
 import { b, BNToken, bt } from "util/BN";
+
+export interface UserInfo {
+  balance: string;
+  numberOfMarkets: string;
+  userinfoMultihash: string;
+  username: string;
+}
+
+export interface Bet {
+  useraddress: string;
+  username: string;
+  betsize: BNToken;
+  numberOfShares: BNToken;
+  outcome: BN;
+}
+
+export interface IMarketInfo {
+  useraddress: string;
+  username: string;
+  index: BN;
+  pool: BNToken;
+  prob: BN;
+  ante0: BNToken;
+  ante1: BNToken;
+  anteShares0: BNToken;
+  anteShares1: BNToken;
+  impliedProb0: number;
+  impliedProb1: number;
+  infoMultihash: string;
+  numberOfBets: BN;
+  closesAt: Date;
+  title: string;
+  description: string;
+  poolsize: BNToken;
+  bets: Bet[];
+  blockNumber: number;
+  timestamp: Date;
+  moneyOn0: BNToken;
+  moneyOn1: BNToken;
+  sharesOf0: BNToken;
+  sharesOf1: BNToken;
+}
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -39,13 +79,6 @@ export async function register(
   await contract.methods
     .register(stringToAsciiBytes32(username), multihash)
     .send({ from: address });
-}
-
-export interface UserInfo {
-  balance: string;
-  numberOfMarkets: string;
-  userinfoMultihash: string;
-  username: string;
 }
 
 const userNameCache: { [username: string]: string } = {};
@@ -215,37 +248,6 @@ export async function getMarket(
   return m;
 }
 
-export interface Bet {
-  useraddress: string;
-  username: string;
-  betsize: BNToken;
-  numberOfShares: BNToken;
-  outcome: BN;
-}
-
-export interface IMarketInfo {
-  useraddress: string;
-  username: string;
-  index: BN;
-  pool: BNToken;
-  prob: BN;
-  ante0: BNToken;
-  ante1: BNToken;
-  anteShares0: BNToken;
-  anteShares1: BNToken;
-  impliedProb0: Number;
-  impliedProb1: Number;
-  infoMultihash: string;
-  numberOfBets: BN;
-  closesAt: Date;
-  title: string;
-  description: string;
-  poolsize: BNToken;
-  bets: Bet[];
-  blockNumber: number;
-  timestamp: Date;
-}
-
 async function getMarketInternal(
   web3: Web3,
   marketaddress: string,
@@ -279,13 +281,46 @@ async function getMarketInternal(
     anteShares1: BNToken.fromNumTokens('1'),
     impliedProb0: 50, // Filled in after
     impliedProb1: 50, // Filled in after
+    moneyOn0: BNToken.fromNumTokens('0'),
+    moneyOn1: BNToken.fromNumTokens('0'),
+    sharesOf0: BNToken.fromNumTokens('0'),
+    sharesOf1: BNToken.fromNumTokens('0'),
   };
 
   market.ante0 = BNToken.fromSand(market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100)));
   market.ante1 = BNToken.fromSand(market.pool.asSand().mul(market.prob).div(new BN(100)));
-
+  
   const more = await getBets(web3, market);
   market = { ...market, ...more };
+
+  let moneyOn0 = market.ante0.asSand();
+  let moneyOn1 = market.ante1.asSand();
+  let sharesOf0 = BNToken.fromNumTokens('1').asSand();
+  let sharesOf1 = BNToken.fromNumTokens('1').asSand();
+
+  console.log([moneyOn0.toString(), moneyOn1.toString(), sharesOf0.toString(), sharesOf1.toString()])
+  for (let bet of market.bets) {
+    moneyOn0 = moneyOn0.add(bet.outcome.eq(b(0)) ? bet.betsize.asSand() : b(0));
+    moneyOn1 = moneyOn1.add(bet.outcome.eq(b(1)) ? bet.betsize.asSand() : b(0));
+    sharesOf0 = sharesOf0.add(
+      bet.outcome.eq(b(0)) ? bet.numberOfShares.asSand() : b(0)
+    );
+    sharesOf1 = sharesOf1.add(
+      bet.outcome.eq(b(1)) ? bet.numberOfShares.asSand() : b(0)
+    );
+    console.log([moneyOn0.toString(), moneyOn1.toString(), sharesOf0.toString(), sharesOf1.toString()])
+  }
+
+  market.moneyOn0 = BNToken.fromSand(moneyOn0);
+  market.moneyOn1 = BNToken.fromSand(moneyOn1);
+  market.sharesOf0 = BNToken.fromSand(sharesOf0);
+  market.sharesOf1 = BNToken.fromSand(sharesOf1);
+
+  const m0n0 = moneyOn0.mul(sharesOf0);
+  const m1n1 = moneyOn1.mul(sharesOf1);
+  market.impliedProb0 = m0n0.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
+  market.impliedProb1 = m1n1.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
+
 
   return market;
 }

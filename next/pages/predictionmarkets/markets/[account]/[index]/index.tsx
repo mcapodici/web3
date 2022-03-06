@@ -110,7 +110,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                           margin: "0 0 0.2em 0",
                         }}
                       >
-                        {market.impliedProb0.toFixed(0)}%
+                        {(market.impliedProb1).toFixed(0)}%
                       </p>
                       <p
                         style={{
