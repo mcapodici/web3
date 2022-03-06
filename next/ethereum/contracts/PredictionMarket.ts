@@ -42,7 +42,7 @@ export async function register(
 }
 
 export interface UserInfo {
-  balance: BN;
+  balance: string;
   numberOfMarkets: string;
   userinfoMultihash: string;
   username: string;
@@ -61,7 +61,7 @@ export async function getUserNameWithCache(web3: Web3, address: string) {
 export async function calculateNumbeOfSharesForMarket(
   web3: Web3,
   marketAddress: string,
-  marketIndex: string,
+  marketIndex: number,
   betAmount: BNToken,
   isYes: boolean
 ) {
@@ -105,9 +105,10 @@ export async function makeBet(
   numberOfShares: BN,
   isYes: boolean
 ) {
+//  console.log({a:marketAddress, b:marketIndex, c:numberOfShares.toString(), d:isYes ? 1 : 0, e:bettorAddess});
   const contract = makeContractObject(web3);
   await contract.methods
-    .makeBet(marketAddress, marketIndex, numberOfShares, isYes ? 1 : 0)
+    .makeBet(marketAddress, marketIndex, numberOfShares, isYes ?'1' :'0')
     .send({ from: bettorAddess });
 }
 
@@ -117,9 +118,13 @@ export async function getUserInfo(
 ): Promise<UserInfo> {
   const contract = makeContractObject(web3);
   const result = await contract.methods.getUser(address).call();
-  result.username = asciiBytes32ToString(result.username);
-  result.balance = web3.utils.toBN(web3.utils.fromWei(result.balance, "ether")); // We use the same token ratios as Ether.
-  return result;
+
+  return {
+   username: asciiBytes32ToString(result.username),
+   balance: BNToken.fromSand(new BN(result.balance)).toNumTokens(4),
+   numberOfMarkets: result.numberOfMarkets,
+   userinfoMultihash: result.userinfoMultihash
+  }
 }
 
 const zeroAddress = "0x0000000000000000000000000000000000000000";
@@ -167,20 +172,26 @@ async function getBets(
 ): Promise<{ poolsize: BNToken; bets: Bet[] }> {
   const contract = makeContractObject(web3);
   const bets = await Promise.all(
-    Array(0).map((_, i) =>
+    Array(market.numberOfBets).map((_, i) =>
       contract.methods.getBet(market.useraddress, market.index, i).call()
     )
   );
 
+  const betsWithUsername = await Promise.all(bets.map(async bet => {
+    const username = await getUserNameWithCache(web3, bet.useraddress);
+    return { ...bet, username };
+  }))
+
   return {
     poolsize: BNToken.fromSand(
-      b(market.pool.asSand()).add(sumBN(bets.map((b) => b.betsize)))
+      market.pool.asSand().add(sumBN(bets.map((b) => new BN(b.betsize))))
     ),
-    bets: bets.map((b) => ({
-      useraddress: b.useraddress,
-      betsize: b(b.betsize),
-      numberOfShares: b(b.numberOfShares),
-      outcome: b(b.outcome),
+    bets: betsWithUsername.map((bet) => ({
+      useraddress: bet.useraddress,
+      username: bet.username,
+      betsize: bt(bet.betsize),
+      numberOfShares: bt(bet.numberOfShares),
+      outcome: b(bet.outcome),
     })),
   };
 }
@@ -188,7 +199,7 @@ async function getBets(
 export async function getMarket(
   web3: Web3,
   marketaddress: string,
-  index: string
+  index: number
 ) {
   const m = await getMarketInternal(web3, marketaddress, index);
 
@@ -206,6 +217,7 @@ export async function getMarket(
 
 export interface Bet {
   useraddress: string;
+  username: string;
   betsize: BNToken;
   numberOfShares: BNToken;
   outcome: BN;
@@ -231,7 +243,7 @@ export interface IMarketInfo {
 async function getMarketInternal(
   web3: Web3,
   marketaddress: string,
-  index: string
+  index: number
 ) {
   const contract = makeContractObject(web3);
   const m = await contract.methods.getMarket(marketaddress, index).call();

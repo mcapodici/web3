@@ -6,50 +6,68 @@ import {
   calculateNumbeOfSharesForMarket,
   getMarket,
   getUserInfo,
+  IMarketInfo,
+  makeBet,
   UserInfo,
 } from "ethereum/contracts/PredictionMarket";
 import Layout from "sitewide/Layout";
 import { formatDistance } from "date-fns";
-import { Button, Card, Form, Icon, Image, Input } from "semantic-ui-react";
+import {
+  Button,
+  Card,
+  Form,
+  Icon,
+  Image,
+  Input,
+  Table,
+} from "semantic-ui-react";
 import { BNToken } from "util/BN";
 import siteWideData from "sitewide/SiteWideData.json";
 import BN from "bn.js";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
-  const [market, setMarket] = useState<any>();
+  const [market, setMarket] = useState<IMarketInfo>();
   const [betAmount, setBetAmount] = useState("1");
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const r = useRouter();
+  const marketaddress = r.query.account as string;
+  const marketindex = Number(r.query.index);
   const betFormErrorMessage = false;
 
   const intPattern = /^[0-9]+$/;
 
   const web3 = web3Ref.current;
-  const betAmountBN = new BN(betAmount);
-  const funds = userInfo?.balance || new BN("0");
+  const betAmountNumber = intPattern.test(betAmount)
+    ? new Number(betAmount)
+    : 0;
+  const funds = Number(userInfo?.balance) || 0;
   const isRegistered = !!userInfo?.username;
-  const betAmountError =
-    !intPattern.test(betAmount) ||
-    betAmountBN.lt(new BN(1)) ||
-    betAmountBN.gt(new BN(funds));
+  const betAmountError = betAmountNumber < 1 || betAmountNumber > funds;
 
   const loadMarket = async () => {
-    const { account: marketaddress, index: marketindex } = r.query;
-    const m = await getMarket(
-      web3,
-      marketaddress as string,
-      marketindex as string
-    );
+    const m = await getMarket(web3, marketaddress, marketindex);
     setMarket(m);
+    console.log(m.bets);
   };
 
   const placeBet = async (yes: boolean) => {
-    const { account: marketaddress, index: marketindex } = r.query;
-    const shares = await calculateNumbeOfSharesForMarket(
+    console.log("placebet called");
+    const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
-      marketaddress as string,
-      marketindex as string,
+      marketaddress,
+      marketindex,
       BNToken.fromNumTokens(betAmount),
+      yes
+    );
+
+    console.log("numberOfShares" + numberOfShares.asSand().toString());
+
+    await makeBet(
+      web3,
+      firstAccount,
+      marketaddress,
+      marketindex,
+      numberOfShares.asSand(),
       yes
     );
   };
@@ -136,6 +154,38 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           <strong>No Bets!</strong> Other than the ante, there are no bets yet
           on this market. Maybe you make the first one?
         </p>
+      )}
+      {market.bets.length && (
+        <Table>
+          <Table.Header>
+            <Table.HeaderCell>User</Table.HeaderCell>
+            <Table.HeaderCell>Outcome</Table.HeaderCell>
+            <Table.HeaderCell>Bet Amount</Table.HeaderCell>
+            <Table.HeaderCell>Shares</Table.HeaderCell>
+          </Table.Header>
+            <Table.Row>
+              <Table.Cell>{market.username}</Table.Cell>
+              <Table.Cell>ANTE - YES</Table.Cell>
+              <Table.Cell>{BNToken.fromSand(market.pool.asSand().mul(market.prob).div(new BN(100))).toNumTokens(4)}</Table.Cell>
+              <Table.Cell>1</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{market.username}</Table.Cell>
+              <Table.Cell>ANTE - NO</Table.Cell>
+              <Table.Cell>{BNToken.fromSand(market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100))).toNumTokens(4)}</Table.Cell>
+              <Table.Cell>1</Table.Cell>
+            </Table.Row>
+          {market.bets.map((b) => (
+            <Table.Row>
+              <Table.Cell>{b.username}</Table.Cell>
+              <Table.Cell>
+                {b.outcome.toString() == "1" ? "YES" : "NO"}
+              </Table.Cell>
+              <Table.Cell>{b.betsize.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
       )}
 
       <h2>Place your bet</h2>
