@@ -9,7 +9,7 @@ import {
   UserInfo,
   getMarkets,
 } from "ethereum/contracts/PredictionMarket";
-import { Button, Header, Icon, Message } from "semantic-ui-react";
+import { Button, Divider, Header, Icon, Message } from "semantic-ui-react";
 import { RegisterModal } from "./RegisterModal";
 import { CreateMarket } from "./CreateMarket";
 import BN from "bn.js";
@@ -31,20 +31,13 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
     init();
   }, [firstAccount]);
 
-  const funds = userInfo?.balance || BNToken.fromNumTokens('0');
+  const funds = userInfo?.balance || BNToken.fromNumTokens("0");
   const isRegistered = !!userInfo?.username;
 
   return (
     <Layout>
       <Description />
-      <p>
-        Note that this is using the contract deployed to{" "}
-        <ShortAddressWithLink
-          address={
-            siteWideData.deployedContractAddresses.predictionMarketsAddress
-          }
-        />
-      </p>
+      <Divider />
       {isRegistered && (
         <>
           <h1>Welcome, {userInfo?.username}!</h1>
@@ -78,6 +71,16 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
           onClose={() => setShowRegisterModal(false)}
         />
       )}
+
+      <Divider />
+      <p>
+        Note that this is using the contract deployed to{" "}
+        <ShortAddressWithLink
+          address={
+            siteWideData.deployedContractAddresses.predictionMarketsAddress
+          }
+        />
+      </p>
     </Layout>
   );
 };
