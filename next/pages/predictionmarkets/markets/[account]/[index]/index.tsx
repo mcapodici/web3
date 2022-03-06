@@ -41,9 +41,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const betAmountNumber = intPattern.test(betAmount)
     ? new Number(betAmount)
     : 0;
-  const funds = Number(userInfo?.balance) || 0;
+  const funds = userInfo?.balance || BNToken.fromNumTokens("0");
   const isRegistered = !!userInfo?.username;
-  const betAmountError = betAmountNumber < 1 || betAmountNumber > funds;
+  const betAmountError = betAmountNumber < 1 || betAmountNumber > Number(funds.toNumTokens());
 
   const loadMarket = async () => {
     const m = await getMarket(web3, marketaddress, marketindex);
@@ -240,6 +240,13 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     <p>Loading...</p>
   );
 
-  return <Layout>{innards}</Layout>;
+  return (
+    <Layout>
+      <p style={{ float: "right" }}>
+        Funds: <strong>P${funds.toNumTokens(4)}</strong>
+      </p>
+      {innards}
+    </Layout>
+  );
 };
 export default RequireWeb3Wrapper(Index, () => <></>);

@@ -36,14 +36,14 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
 
   return (
     <Layout>
+    <p style={{float:'right'}}>
+      Funds: <strong>P${funds.toNumTokens(4)}</strong>
+    </p>
       <Description />
       <Divider />
       {isRegistered && (
         <>
           <h1>Welcome, {userInfo?.username}!</h1>
-          <p>
-            Funds: <strong>P${funds.toNumTokens(4)}</strong>
-          </p>
           <CreateMarket
             web3Ref={web3Ref}
             firstAccount={firstAccount}
