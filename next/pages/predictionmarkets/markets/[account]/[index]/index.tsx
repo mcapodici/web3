@@ -166,14 +166,14 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             <Table.Row>
               <Table.Cell>{market.username}</Table.Cell>
               <Table.Cell>ANTE - YES</Table.Cell>
-              <Table.Cell>{BNToken.fromSand(market.pool.asSand().mul(market.prob).div(new BN(100))).toNumTokens(4)}</Table.Cell>
-              <Table.Cell>1</Table.Cell>
+              <Table.Cell>{market.ante1.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>{market.username}</Table.Cell>
               <Table.Cell>ANTE - NO</Table.Cell>
-              <Table.Cell>{BNToken.fromSand(market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100))).toNumTokens(4)}</Table.Cell>
-              <Table.Cell>1</Table.Cell>
+              <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
             </Table.Row>
           {market.bets.map((b) => (
             <Table.Row>

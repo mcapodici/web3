@@ -229,6 +229,10 @@ export interface IMarketInfo {
   index: BN;
   pool: BNToken;
   prob: BN;
+  ante0: BNToken;
+  ante1: BNToken;
+  anteShares0: BNToken;
+  anteShares1: BNToken;
   infoMultihash: string;
   numberOfBets: BN;
   closesAt: Date;
@@ -252,7 +256,7 @@ async function getMarketInternal(
   const cid = IPFS.contractMultiHashToCID(m.infoMultihash);
   const marketInfo = JSON.parse(await IPFS.fetchText(cid));
 
-  let result: IMarketInfo = {
+  let market: IMarketInfo = {
     useraddress: marketaddress,
     username: username,
     index: b(index),
@@ -266,13 +270,20 @@ async function getMarketInternal(
     poolsize: bt(0), // Filled in after
     bets: [], // Filled in after
     blockNumber: 0, // Filled in after
-    timestamp: new Date(0), // Filled in lfter
+    timestamp: new Date(0), // Filled in after
+    ante0: BNToken.fromNumTokens('0'), // Filled in after
+    ante1: BNToken.fromNumTokens('0'), // Filled in after
+    anteShares0: BNToken.fromNumTokens('1'),
+    anteShares1: BNToken.fromNumTokens('1'),
   };
 
-  const more = await getBets(web3, result);
-  result = { ...result, ...more };
+  market.ante0 = BNToken.fromSand(market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100)));
+  market.ante1 = BNToken.fromSand(market.pool.asSand().mul(market.prob).div(new BN(100)));
 
-  return result;
+  const more = await getBets(web3, market);
+  market = { ...market, ...more };
+
+  return market;
 }
 
 export async function getMarkets(web3: Web3) {
