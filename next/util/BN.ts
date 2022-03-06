@@ -60,7 +60,8 @@ export function toBaseUnit(value: string, decimals: number) {
     fraction = "0";
   }
   if (fraction.length > decimals) {
-    throw new Error("Too many decimal places");
+    // Truncate
+    fraction = fraction.slice(0, decimals);
   }
 
   while (fraction.length < decimals) {

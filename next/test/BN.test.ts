@@ -1,4 +1,4 @@
-import { BNTokenSand } from "../util/BN";
+import { BNTokenSand, toBaseUnit } from "../util/BN";
 import BN from "bn.js";
 import fc from "fast-check";
 import chai, { expect } from "chai";
@@ -13,7 +13,16 @@ const examplesOfRawTokenAmounts = fc
   .bigUintN(128)
   .map((x) => new BN(x.toString()));
 
-describe("toBaseUnit", () => {});
+describe("toBaseUnit", () => {
+    it("works", () => {
+       expect(toBaseUnit('1000', 2)).to.be.eq.BN(new BN('100000'));
+       expect(toBaseUnit('1000.666', 2)).to.be.eq.BN(new BN('100066'), 'truncation');       
+       expect(toBaseUnit('0.01', 2)).to.be.eq.BN(new BN('1'), 'smallest');       
+       expect(toBaseUnit('0', 2)).to.be.eq.BN(new BN('0'), 'zero');              
+       expect(toBaseUnit('0.5', 2)).to.be.eq.BN(new BN('50'), 'partial dp');       
+       expect(toBaseUnit('1000000000000000000000000000000000000000000000.01', 2)).to.be.eq.BN(new BN('100000000000000000000000000000000000000000000001'), 'big no');
+    });
+});
 
 describe("BNTokenSand", () => {
   it("round trip human values", () => {
