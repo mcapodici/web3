@@ -1,4 +1,5 @@
 import "semantic-ui-css/semantic.min.css";
+import "./style.css";
 import type { AppProps } from "next/app";
 import { useRef, useEffect, useState, MutableRefObject } from "react";
 import { Context, Web3Status } from "sitewide/Context";
