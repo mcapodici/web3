@@ -3,6 +3,7 @@ import { RequireWeb3Wrapper, Web3Props } from "sitewide/RequireWeb3Wrapper";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
+  calculateNumbeOfSharesForMarket,
   getMarket,
   getUserInfo,
   UserInfo,
@@ -10,7 +11,7 @@ import {
 import Layout from "sitewide/Layout";
 import { formatDistance } from "date-fns";
 import { Button, Card, Form, Icon, Image, Input } from "semantic-ui-react";
-import { toNumberOfTokens } from "util/BN";
+import { BNToken } from "util/BN";
 import siteWideData from "sitewide/SiteWideData.json";
 import BN from "bn.js";
 
@@ -33,13 +34,24 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     betAmountBN.gt(new BN(funds));
 
   const loadMarket = async () => {
-    const { account, index } = r.query;
-    const m = await getMarket(web3, account as string, index as string);
+    const { account: marketaddress, index: marketindex } = r.query;
+    const m = await getMarket(
+      web3,
+      marketaddress as string,
+      marketindex as string
+    );
     setMarket(m);
   };
 
-  const placeBet = async(yes: boolean) => {
-    
+  const placeBet = async (yes: boolean) => {
+    const { account: marketaddress, index: marketindex } = r.query;
+    const shares = await calculateNumbeOfSharesForMarket(
+      web3,
+      marketaddress as string,
+      marketindex as string,
+      BNToken.fromNumTokens(betAmount),
+      yes
+    );
   };
 
   useEffect(() => {
@@ -79,7 +91,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
               style={{ marginRight: "10px" }}
             >
               <Icon name="money" color="yellow" />
-              {toNumberOfTokens(market.poolsize).toString()}
+              {market.poolsize.toNumTokens(2)}
             </a>
             <a title="Number of bettors, including market maker">
               <Icon name="user" color="brown" />
@@ -144,9 +156,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                   >
                     Bet YES
                   </Button>
-                  <Button 
-                  color="pink"
-                  onClick={() => placeBet(false)}>Bet NO</Button>
+                  <Button color="pink" onClick={() => placeBet(false)}>
+                    Bet NO
+                  </Button>
                 </>
               }
             ></Input>
