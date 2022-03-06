@@ -194,8 +194,8 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
           <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
         </Table.Row>
-        {market.bets.map((b) => (
-          <Table.Row>
+        {market.bets.map((b, i) => (
+          <Table.Row key={i}>
             <Table.Cell>{b.username}</Table.Cell>
             <Table.Cell>
               {b.outcome.toString() == "1" ? "YES" : "NO"}
