@@ -1,4 +1,4 @@
-import { BNTokenSand, toBaseUnit } from "../util/BN";
+import { BNToken, toBaseUnit } from "../util/BN";
 import BN from "bn.js";
 import fc from "fast-check";
 import chai, { expect } from "chai";
@@ -28,7 +28,7 @@ describe("BNTokenSand", () => {
   it("round trip human values", () => {
     fc.assert(
       fc.property(examplesOfBetAmounts, (amt) => {
-        const roundTrip = BNTokenSand.fromNumTokens(
+        const roundTrip = BNToken.fromNumTokens(
           amt.toString()
         ).toNumTokens();
         return Number(roundTrip) === amt.toNumber();
@@ -38,14 +38,14 @@ describe("BNTokenSand", () => {
   it("round trip contract values", () => {
     fc.assert(
       fc.property(examplesOfRawTokenAmounts, (amt) => {
-        const roundTrip = BNTokenSand.fromSand(amt).asSand();
+        const roundTrip = BNToken.fromSand(amt).asSand();
         return roundTrip.eq(amt);
       })
     );
   });
   it("converts from sand to human", () => {
     const tester = (tokens: string, sand: string) =>
-      expect(BNTokenSand.fromSand(new BN(sand)).toNumTokens()).to.equal(tokens);
+      expect(BNToken.fromSand(new BN(sand)).toNumTokens()).to.equal(tokens);
 
     tester("2.000000000000000000", "2000000000000000000");
     tester("2.100000000000000000", "2100000000000000000");
@@ -54,7 +54,7 @@ describe("BNTokenSand", () => {
   });
   it("converts from human to sand", () => {
     const tester = (tokens: string, sand: string) =>
-      expect(BNTokenSand.fromNumTokens(tokens).asSand()).to.eq.BN(new BN(sand));
+      expect(BNToken.fromNumTokens(tokens).asSand()).to.eq.BN(new BN(sand));
 
     tester("2", "2000000000000000000");
     tester("2.1", "2100000000000000000");

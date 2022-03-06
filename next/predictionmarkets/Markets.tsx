@@ -1,12 +1,11 @@
 import { Card, Icon, Image } from "semantic-ui-react";
 import siteWideData from "sitewide/SiteWideData.json";
-import { toNumberOfTokens } from "util/BN";
 import { formatDistance } from "date-fns";
-import Router from "next/router";
 import Link from "next/link";
+import { IMarketInfo } from "ethereum/contracts/PredictionMarket";
 
 export interface IMarketsProps {
-  markets: any[];
+  markets: IMarketInfo[];
 }
 
 const Markets = ({ markets }: IMarketsProps) => {
@@ -49,7 +48,7 @@ const Markets = ({ markets }: IMarketsProps) => {
                   style={{ marginRight: "10px" }}
                 >
                   <Icon name="money" color="yellow" />
-                  {toNumberOfTokens(market.poolsize).toString()}
+                  {market.poolsize.toNumTokens(2)}
                 </a>
                 <a title="Number of bettors, including market maker">
                   <Icon name="user" color="brown" />

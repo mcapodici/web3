@@ -1,9 +1,5 @@
 import BN from "bn.js";
 
-export function toNumberOfTokens(raw: BN) {
-  return raw.div(new BN("1000000000000000000"));
-}
-
 /**
  * Convenience for creating a new BN
  * @param n THe number to convert
@@ -11,6 +7,17 @@ export function toNumberOfTokens(raw: BN) {
  */
 export function b(n: number | string | number[] | Uint8Array | Buffer | BN) {
   return new BN(n);
+}
+
+/**
+ * Convenience for creating a new BNToken
+ * @param sand THe number to convert
+ * @returns A BN instance
+ */
+export function bt(
+  sand: number | string | number[] | Uint8Array | Buffer | BN
+) {
+  return BNToken.fromSand(new BN(sand));
 }
 
 function isString(s: any) {
@@ -84,7 +91,7 @@ export function toBaseUnit(value: string, decimals: number) {
  * of this format are used by the contract calls for token
  * amounts.
  */
-export class BNTokenSand {
+export class BNToken {
   private sand: BN;
   private static NUM_DECIMALS = 18;
 
@@ -95,25 +102,30 @@ export class BNTokenSand {
   /** Create an instance from the human representation, for example
    * passing in 1 creates an instance representing 1 token.
    */
-  static fromNumTokens(numTokens: string): BNTokenSand {
-    return new BNTokenSand(toBaseUnit(numTokens, BNTokenSand.NUM_DECIMALS));
+  static fromNumTokens(numTokens: string): BNToken {
+    return new BNToken(toBaseUnit(numTokens, BNToken.NUM_DECIMALS));
   }
 
   /** Create an instance from the contract representation, for example
    * passing in 1000000000000000000 creates an instance representing 1 oken.
    */
-  static fromSand(sand: BN): BNTokenSand {
-    return new BNTokenSand(sand);
+  static fromSand(sand: BN): BNToken {
+    return new BNToken(sand);
   }
 
   /** Returns the human representation, for example 1 token will be 1 */
-  toNumTokens() {
-    const sandString = this.sand.toString().padStart(BNTokenSand.NUM_DECIMALS + 1, '0');
+  toNumTokens(numDecimals: number = BNToken.NUM_DECIMALS) {
+    const sandString = this.sand
+      .toString()
+      .padStart(BNToken.NUM_DECIMALS + 1, "0");
 
     return (
-      sandString.slice(0, sandString.length - BNTokenSand.NUM_DECIMALS) +
+      sandString.slice(0, sandString.length - BNToken.NUM_DECIMALS) +
       "." +
-      sandString.slice(sandString.length - BNTokenSand.NUM_DECIMALS, sandString.length)
+      sandString.slice(
+        sandString.length - BNToken.NUM_DECIMALS,
+        sandString.length - BNToken.NUM_DECIMALS + numDecimals
+      )
     );
   }
 

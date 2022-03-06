@@ -9,7 +9,7 @@ import { rawListeners } from "process";
 import { contractMultiHashToCID } from "sitewide/IPFS";
 import { sum, sumBN } from "util/Array";
 import { calculateSharesForBetAmount } from "util/Math";
-import { b } from "util/BN";
+import { b, BNToken, bt } from "util/BN";
 
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
@@ -62,33 +62,36 @@ export async function calculateNumbeOfSharesForMarket(
   web3: Web3,
   marketAddress: string,
   marketIndex: string,
-  betAmount: BN,
+  betAmount: BNToken,
   isYes: boolean
 ) {
   const market = await getMarket(web3, marketAddress, marketIndex);
 
-  let moneyOn0 = market.pool.mul(b(100).sub(market.prob));
-  let moneyOn1 = market.pool.mul(market.prob);
-  let sharesOf0 = b(1);
-  let sharesOf1 = b(1);
+  let moneyOn0 = market.pool.asSand().mul(b(100).sub(market.prob));
+  let moneyOn1 = market.pool.asSand().mul(market.prob);
+  let sharesOf0 = BNToken.fromNumTokens('1').asSand();
+  let sharesOf1 = BNToken.fromNumTokens('1').asSand();
   let outcome = isYes ? 1 : 0;
 
   for (let bet of market.bets) {
-    moneyOn0 = moneyOn0.add(bet.outcome.eq(b(0)) ? bet.betsize : b(0));
-    moneyOn1 = moneyOn1.add(bet.outcome.eq(b(1)) ? bet.betsize : b(0));
-    sharesOf0 = sharesOf0.add(bet.outcome.eq(b(0)) ? bet.numberOfShares : b(0));
-    sharesOf1 = sharesOf1.add(bet.outcome.eq(b(1)) ? bet.numberOfShares : b(0));
-  } 
+    moneyOn0 = moneyOn0.add(bet.outcome.eq(b(0)) ? bet.betsize.asSand() : b(0));
+    moneyOn1 = moneyOn1.add(bet.outcome.eq(b(1)) ? bet.betsize.asSand() : b(0));
+    sharesOf0 = sharesOf0.add(
+      bet.outcome.eq(b(0)) ? bet.numberOfShares.asSand() : b(0)
+    );
+    sharesOf1 = sharesOf1.add(
+      bet.outcome.eq(b(1)) ? bet.numberOfShares.asSand() : b(0)
+    );
+  }
 
   // What is the convention as to what kind of numbers - e.g. contract format (1 = 10 ** 18). I think it shold be that
   // way. We should have a convention / naeme for anything stored this way on the front end as there is a mix ( probably)
   // have this convention in the contract too. Might need to change calculateSharesForBetAmount to work with BN??
-
   return calculateSharesForBetAmount(
-    moneyOn0,
-    moneyOn1,
-    sharesOf0,
-    sharesOf1,
+    BNToken.fromSand(moneyOn0),
+    BNToken.fromSand(moneyOn1),
+    BNToken.fromSand(sharesOf0),
+    BNToken.fromSand(sharesOf1),
     outcome,
     betAmount
   );
@@ -158,7 +161,10 @@ export async function createMarket(
 }
 
 // Market is return result of getMarket call
-async function getBets(web3: Web3, market: any) : Promise<{ poolsize: BN, bets: Bet[] }> {
+async function getBets(
+  web3: Web3,
+  market: IMarketInfo
+): Promise<{ poolsize: BNToken; bets: Bet[] }> {
   const contract = makeContractObject(web3);
   const bets = await Promise.all(
     Array(0).map((_, i) =>
@@ -167,13 +173,15 @@ async function getBets(web3: Web3, market: any) : Promise<{ poolsize: BN, bets: 
   );
 
   return {
-    poolsize: b(market.pool).add(sumBN(bets.map((b) => b.betsize))),
-    bets: bets.map(b => ({
+    poolsize: BNToken.fromSand(
+      b(market.pool.asSand()).add(sumBN(bets.map((b) => b.betsize)))
+    ),
+    bets: bets.map((b) => ({
       useraddress: b.useraddress,
       betsize: b(b.betsize),
       numberOfShares: b(b.numberOfShares),
-      outcome: b(b.outcome)
-    }))
+      outcome: b(b.outcome),
+    })),
   };
 }
 
@@ -197,9 +205,9 @@ export async function getMarket(
 }
 
 export interface Bet {
-  useraddress : string;
-  betsize: BN;
-  numberOfShares: BN;
+  useraddress: string;
+  betsize: BNToken;
+  numberOfShares: BNToken;
   outcome: BN;
 }
 
@@ -207,14 +215,14 @@ export interface IMarketInfo {
   useraddress: string;
   username: string;
   index: BN;
-  pool: BN;
+  pool: BNToken;
   prob: BN;
   infoMultihash: string;
   numberOfBets: BN;
   closesAt: Date;
   title: string;
   description: string;
-  poolsize: BN;
+  poolsize: BNToken;
   bets: Bet[];
   blockNumber: number;
   timestamp: Date;
@@ -236,17 +244,17 @@ async function getMarketInternal(
     useraddress: marketaddress,
     username: username,
     index: b(index),
-    pool: b(m.pool),
+    pool: bt(m.pool),
     prob: b(m.prob),
     infoMultihash: m.infoMultihash,
     numberOfBets: m.numberOfBets,
     closesAt: new Date(m.closesAt * 1000),
     title: marketInfo.title,
     description: marketInfo.description,
-    poolsize: b(0), // Filled in after
+    poolsize: bt(0), // Filled in after
     bets: [], // Filled in after
     blockNumber: 0, // Filled in after
-    timestamp: new Date(0) // Filled in lfter
+    timestamp: new Date(0), // Filled in lfter
   };
 
   const more = await getBets(web3, result);
