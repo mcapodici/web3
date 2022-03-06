@@ -233,6 +233,8 @@ export interface IMarketInfo {
   ante1: BNToken;
   anteShares0: BNToken;
   anteShares1: BNToken;
+  impliedProb0: Number;
+  impliedProb1: Number;
   infoMultihash: string;
   numberOfBets: BN;
   closesAt: Date;
@@ -275,6 +277,8 @@ async function getMarketInternal(
     ante1: BNToken.fromNumTokens('0'), // Filled in after
     anteShares0: BNToken.fromNumTokens('1'),
     anteShares1: BNToken.fromNumTokens('1'),
+    impliedProb0: 50, // Filled in after
+    impliedProb1: 50, // Filled in after
   };
 
   market.ante0 = BNToken.fromSand(market.pool.asSand().mul(new BN(100).sub(market.prob)).div(new BN(100)));

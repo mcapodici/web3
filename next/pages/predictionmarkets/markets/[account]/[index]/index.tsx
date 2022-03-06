@@ -16,6 +16,7 @@ import {
   Button,
   Card,
   Form,
+  Grid,
   Icon,
   Image,
   Input,
@@ -84,19 +85,48 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
         <Card>
           <Card.Content>
             <Card.Header>
-              <Image
-                floated="left"
-                size="small"
-                src={siteWideData.imageHashTemplate.replace(
-                  "{0}",
-                  `${market.username}_${market.index}`
-                )}
-                ui={true}
-                circular={true}
-              />
-              {market.title || "Untitled"}
+              <Grid>
+                <Grid.Row columns={3}>
+                  <Grid.Column width={3}>
+                    <Image
+                      size="small"
+                      src={siteWideData.imageHashTemplate.replace(
+                        "{0}",
+                        `${market.username}_${market.index}`
+                      )}
+                      ui={true}
+                      circular={true}
+                    />
+                  </Grid.Column>
+                  <Grid.Column width={10}>
+                    {market.title || "Untitled"}
+                  </Grid.Column>
+                  <Grid.Column width={3} textAlign="center">
+                    <span style={{ color: "green" }}>
+                      <p
+                        style={{
+                          fontSize: "2em",
+                          lineHeight: "1em",
+                          margin: "0 0 0.2em 0",
+                        }}
+                      >
+                        {market.impliedProb0.toFixed(0)}%
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "1em",
+                          lineHeight: "1em",
+                          margin: "0",
+                        }}
+                      >
+                        chance
+                      </p>
+                    </span>
+                  </Grid.Column>
+                </Grid.Row>
+              </Grid>
             </Card.Header>
-            <div>
+            <div style={{ marginTop: "1em" }}>
               <Card.Meta>
                 <span className="date">By {market.username}</span>
               </Card.Meta>
@@ -163,18 +193,18 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             <Table.HeaderCell>Bet Amount</Table.HeaderCell>
             <Table.HeaderCell>Shares</Table.HeaderCell>
           </Table.Header>
-            <Table.Row>
-              <Table.Cell>{market.username}</Table.Cell>
-              <Table.Cell>ANTE - YES</Table.Cell>
-              <Table.Cell>{market.ante1.toNumTokens(4)}</Table.Cell>
-              <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
-            </Table.Row>
-            <Table.Row>
-              <Table.Cell>{market.username}</Table.Cell>
-              <Table.Cell>ANTE - NO</Table.Cell>
-              <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
-              <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
-            </Table.Row>
+          <Table.Row>
+            <Table.Cell>{market.username}</Table.Cell>
+            <Table.Cell>ANTE - YES</Table.Cell>
+            <Table.Cell>{market.ante1.toNumTokens(4)}</Table.Cell>
+            <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
+          </Table.Row>
+          <Table.Row>
+            <Table.Cell>{market.username}</Table.Cell>
+            <Table.Cell>ANTE - NO</Table.Cell>
+            <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
+            <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
+          </Table.Row>
           {market.bets.map((b) => (
             <Table.Row>
               <Table.Cell>{b.username}</Table.Cell>
