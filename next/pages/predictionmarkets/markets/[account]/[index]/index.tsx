@@ -29,7 +29,7 @@ import { ResolveModal } from "predictionmarkets/ResolveModal";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const [market, setMarket] = useState<IMarketInfo>();
-  const [betAmount, setBetAmount] = useState("1");
+  const [betAmount, setBetAmount] = useState("2");
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const [showResolveModal, setShowResolveModal] = useState(false);
 

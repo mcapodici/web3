@@ -12,7 +12,9 @@ The project was created using [next.js](https://nextjs.org/docs/getting-started)
 
 TODO:
 
-* I cannot hide resolved mark
+* Smart contract - allow a 0.5 min bet so that a bet of 1 with LambertW fuzzyness goes through OK every time. Also need to store the resolution of a market, and expose that in the event and the getMarket method.
+* Spinner at all points where you are waiting on a contract call.
+* Refresh data after making a bet, after making a market, and resolving a market.
 * When you load and metamask is locked you get console error "Already processing eth_requestAccounts. Please wait." and the UI says 'checking provider'
 		* one thing to do is to detect that the ep has been found in web3.ts and then we know it is more likely to be a 'you gotta login' ard report that to the user
 		* see what we can do regarding the error message (https://github.com/MetaMask/metamask-extension/issues/10085)
