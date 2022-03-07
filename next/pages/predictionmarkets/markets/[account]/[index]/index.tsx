@@ -47,7 +47,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const funds = userInfo?.balance || BNToken.fromNumTokens("0");
   const isRegistered = !!userInfo?.username;
   const betAmountError =
-    betAmountNumber < 1 || betAmountNumber > Number(funds.toNumTokens());
+    betAmountNumber < 2 || betAmountNumber > Number(funds.toNumTokens());
 
   const loadMarket = async () => {
     const m = await getMarket(web3, marketaddress, marketindex);
@@ -58,10 +58,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     // Hack - if you bet 1 it is dangerously close to the min bet, and the
     // share calc code could have you betting 0.999. So add a safety 2% so
     // the txn doesn't fail. Can fix when a new version of the contract is out
-    const betTokens = BNToken.fromNumTokens(
-      betAmount === "1" ? "1.02" : betAmount
-    );
+    const betTokens = BNToken.fromNumTokens(betAmount);
 
+    console.log(betTokens.toNumTokens(4) + 'tokens');
     const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
       marketaddress,
@@ -240,6 +239,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
       </Table>
 
       <h2>Place your bet</h2>
+      <p>The minimum bet size is 2</p>
       {isRegistered ? (
         <Form error={!!betFormErrorMessage}>
           <Form.Field error={betAmountError}>
