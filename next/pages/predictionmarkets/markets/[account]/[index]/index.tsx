@@ -112,13 +112,14 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                     <span style={{ color: "green" }}>
                       <p
                         style={{
-                          fontSize: "2em",
+                          fontSize: market.resolved ? "1em" : "2em",
                           lineHeight: "1em",
                           margin: "0 0 0.2em 0",
                         }}
                       >
-                        {market.impliedProb1.toFixed(0)}%
+                        {market.resolved ? "RESOLVED" : market.impliedProb1.toFixed(0) + "%"}
                       </p>
+                      {!market.resolved &&
                       <p
                         style={{
                           fontSize: "1em",
@@ -127,7 +128,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                         }}
                       >
                         chance
-                      </p>
+                      </p>}
                     </span>
                   </Grid.Column>
                 </Grid.Row>

@@ -53,6 +53,7 @@ export interface IMarketInfo {
   moneyOn1: BNToken;
   sharesOf0: BNToken;
   sharesOf1: BNToken;
+  resolved: boolean;
 }
 
 export function makeContractObject(web3: Web3) {
@@ -251,6 +252,11 @@ async function getMarketInternal(
   const cid = IPFS.contractMultiHashToCID(m.infoMultihash);
   const marketInfo = JSON.parse(await IPFS.fetchText(cid));
 
+  const resolutionEvents = await contract.getPastEvents("MarketResolved", {
+    filter: { useraddress: marketaddress, index },
+    fromBlock: 1,
+  });
+
   let market: IMarketInfo = {
     useraddress: marketaddress,
     username: username,
@@ -279,6 +285,7 @@ async function getMarketInternal(
     antePayout0: BNToken.fromNumTokens("0"), // Filled in after
     antePayout1: BNToken.fromNumTokens("0"), // Filled in after
     uniqueBettors: 0, // Filled in after
+    resolved: !!resolutionEvents.length
   };
 
   market.ante0 = BNToken.fromSand(
