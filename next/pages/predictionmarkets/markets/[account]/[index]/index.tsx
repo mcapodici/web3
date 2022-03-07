@@ -149,6 +149,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             </a>
           </Card.Content>
           <Card.Content extra>
+            <Grid>
+              <Grid.Row>
+                <Grid.Column width={13}>
             <a
               title={
                 "Created at " +
@@ -176,7 +179,13 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
               {formatDistance(new Date(market.closesAt), new Date(), {
                 addSuffix: true,
               })}
-            </a>
+            </a></Grid.Column>
+                <Grid.Column width={3} textAlign="right">
+                  { market.useraddress === firstAccount &&
+                  <Button size="small" primary>RESOLVE</Button> }
+                </Grid.Column>
+            </Grid.Row>
+            </Grid>
           </Card.Content>
         </Card>
       </Card.Group>
