@@ -6,7 +6,7 @@ import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
 import BN from "bn.js";
 import { sumBN } from "util/Array";
-import { calculateSharesForBetAmount } from "util/Math";
+import { calculateSharesForBetAmount, payout } from "util/Math";
 import { b, BNToken, bt } from "util/BN";
 
 export interface UserInfo {
@@ -22,6 +22,7 @@ export interface Bet {
   betsize: BNToken;
   numberOfShares: BNToken;
   outcome: BN;
+  currentPayoutIfWin: BNToken;
 }
 
 export interface IMarketInfo {
@@ -34,6 +35,8 @@ export interface IMarketInfo {
   ante1: BNToken;
   anteShares0: BNToken;
   anteShares1: BNToken;
+  antePayout0: BNToken;
+  antePayout1: BNToken;
   impliedProb0: number;
   impliedProb1: number;
   infoMultihash: string;
@@ -212,6 +215,7 @@ async function getBets(
       betsize: bt(bet.betsize),
       numberOfShares: bt(bet.numberOfShares),
       outcome: b(bet.outcome),
+      currentPayoutIfWin: bt(0), // Filled in later
     })),
   };
 }
@@ -268,10 +272,12 @@ async function getMarketInternal(
     anteShares1: BNToken.fromNumTokens("1"),
     impliedProb0: 50, // Filled in after
     impliedProb1: 50, // Filled in after
-    moneyOn0: BNToken.fromNumTokens("0"),
-    moneyOn1: BNToken.fromNumTokens("0"),
-    sharesOf0: BNToken.fromNumTokens("0"),
-    sharesOf1: BNToken.fromNumTokens("0"),
+    moneyOn0: BNToken.fromNumTokens("0"), // Filled in after
+    moneyOn1: BNToken.fromNumTokens("0"), // Filled in after
+    sharesOf0: BNToken.fromNumTokens("0"), // Filled in after
+    sharesOf1: BNToken.fromNumTokens("0"), // Filled in after
+    antePayout0: BNToken.fromNumTokens("0"), // Filled in after
+    antePayout1: BNToken.fromNumTokens("0"), // Filled in after
   };
 
   market.ante0 = BNToken.fromSand(
@@ -310,6 +316,23 @@ async function getMarketInternal(
   const m1n1 = moneyOn1.mul(sharesOf1);
   market.impliedProb0 = m0n0.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
   market.impliedProb1 = m1n1.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
+
+  let payout_ = (o:number, ns:BNToken, b:BNToken) => payout(
+    market.moneyOn0,
+    market.moneyOn1,
+    market.sharesOf0,
+    market.sharesOf1, o, ns, b);
+
+  for (let bet of market.bets) {
+    bet.currentPayoutIfWin = payout_(
+      bet.outcome.toNumber(),
+      bet.numberOfShares,
+      bet.betsize
+    );
+  }
+
+  market.antePayout0 = payout_(0, BNToken.fromNumTokens('1'), market.ante0);
+  market.antePayout1 = payout_(1, BNToken.fromNumTokens('1'), market.ante1);
 
   return market;
 }

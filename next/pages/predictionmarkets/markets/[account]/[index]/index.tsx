@@ -187,18 +187,21 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           <Table.HeaderCell>Outcome</Table.HeaderCell>
           <Table.HeaderCell>Bet Amount</Table.HeaderCell>
           <Table.HeaderCell>Shares</Table.HeaderCell>
+          <Table.HeaderCell>Payout</Table.HeaderCell>
         </Table.Header>
         <Table.Row>
           <Table.Cell>{market.username}</Table.Cell>
           <Table.Cell>ANTE - YES</Table.Cell>
-          <Table.Cell>{market.ante1.toNumTokens(4)}</Table.Cell>
+          <Table.Cell>{market.ante1.toNumTokens(0)}</Table.Cell>
           <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
+          <Table.Cell>{market.antePayout1.toNumTokens(0)}</Table.Cell>
         </Table.Row>
         <Table.Row>
           <Table.Cell>{market.username}</Table.Cell>
           <Table.Cell>ANTE - NO</Table.Cell>
-          <Table.Cell>{market.ante0.toNumTokens(4)}</Table.Cell>
+          <Table.Cell>{market.ante0.toNumTokens(0)}</Table.Cell>
           <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
+          <Table.Cell>{market.antePayout0.toNumTokens(0)}</Table.Cell>
         </Table.Row>
         {market.bets.map((b, i) => (
           <Table.Row key={i}>
@@ -208,6 +211,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             </Table.Cell>
             <Table.Cell>{b.betsize.toNumTokens(0)}</Table.Cell>
             <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
+            <Table.Cell>{b.currentPayoutIfWin.toNumTokens(0)}</Table.Cell>
           </Table.Row>
         ))}
       </Table>
