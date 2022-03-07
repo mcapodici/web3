@@ -46,6 +46,7 @@ export interface IMarketInfo {
   description: string;
   poolsize: BNToken;
   bets: Bet[];
+  uniqueBettors: number;
   blockNumber: number;
   timestamp: Date;
   moneyOn0: BNToken;
@@ -188,7 +189,6 @@ async function getBets(
   market: IMarketInfo
 ): Promise<{ poolsize: BNToken; bets: Bet[] }> {
   const contract = makeContractObject(web3);
-  console.log("bets" + market.numberOfBets.toNumber());
   const bets = await Promise.all(
     Array(market.numberOfBets.toNumber())
       .fill(0)
@@ -278,6 +278,7 @@ async function getMarketInternal(
     sharesOf1: BNToken.fromNumTokens("0"), // Filled in after
     antePayout0: BNToken.fromNumTokens("0"), // Filled in after
     antePayout1: BNToken.fromNumTokens("0"), // Filled in after
+    uniqueBettors: 0, // Filled in after
   };
 
   market.ante0 = BNToken.fromSand(
@@ -333,6 +334,8 @@ async function getMarketInternal(
 
   market.antePayout0 = payout_(0, BNToken.fromNumTokens('1'), market.ante0);
   market.antePayout1 = payout_(1, BNToken.fromNumTokens('1'), market.ante1);
+
+  market.uniqueBettors = (new Set(market.bets.map(b => b.useraddress).concat([market.useraddress]))).size;
 
   return market;
 }

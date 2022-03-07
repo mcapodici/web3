@@ -56,7 +56,7 @@ const Markets = ({ markets }: IMarketsProps) => {
               </a>
               <a title="Number of bettors, including market maker">
                 <Icon name="user" color="brown" />
-                {market.bets.length + 1}
+                {market.uniqueBettors}
               </a>
             </Card.Content>
             <Card.Content extra>
