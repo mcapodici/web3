@@ -318,11 +318,16 @@ async function getMarketInternal(
   market.impliedProb0 = m0n0.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
   market.impliedProb1 = m1n1.mul(new BN(100)).div(m0n0.add(m1n1)).toNumber();
 
-  let payout_ = (o:number, ns:BNToken, b:BNToken) => payout(
-    market.moneyOn0,
-    market.moneyOn1,
-    market.sharesOf0,
-    market.sharesOf1, o, ns, b);
+  let payout_ = (o: number, ns: BNToken, b: BNToken) =>
+    payout(
+      market.moneyOn0,
+      market.moneyOn1,
+      market.sharesOf0,
+      market.sharesOf1,
+      o,
+      ns,
+      b
+    );
 
   for (let bet of market.bets) {
     bet.currentPayoutIfWin = payout_(
@@ -332,10 +337,12 @@ async function getMarketInternal(
     );
   }
 
-  market.antePayout0 = payout_(0, BNToken.fromNumTokens('1'), market.ante0);
-  market.antePayout1 = payout_(1, BNToken.fromNumTokens('1'), market.ante1);
+  market.antePayout0 = payout_(0, BNToken.fromNumTokens("1"), market.ante0);
+  market.antePayout1 = payout_(1, BNToken.fromNumTokens("1"), market.ante1);
 
-  market.uniqueBettors = (new Set(market.bets.map(b => b.useraddress).concat([market.useraddress]))).size;
+  market.uniqueBettors = new Set(
+    market.bets.map((b) => b.useraddress).concat([market.useraddress])
+  ).size;
 
   return market;
 }
@@ -363,4 +370,14 @@ export async function getMarkets(web3: Web3) {
   );
 
   return result;
+}
+
+export async function resolve(
+  web3: Web3,
+  marketaddress: string,
+  index: number,
+  outcome: number
+) {
+  const contract = makeContractObject(web3);
+  await contract.methods.resolve(index, outcome).send({ from: marketaddress });
 }

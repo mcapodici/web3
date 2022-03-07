@@ -25,11 +25,14 @@ import {
 import { BNToken } from "util/BN";
 import siteWideData from "sitewide/SiteWideData.json";
 import BN from "bn.js";
+import { ResolveModal } from "predictionmarkets/ResolveModal";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const [market, setMarket] = useState<IMarketInfo>();
   const [betAmount, setBetAmount] = useState("1");
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
+  const [showResolveModal, setShowResolveModal] = useState(false);
+
   const r = useRouter();
   const marketaddress = r.query.account as string;
   const marketindex = Number(r.query.index);
@@ -43,7 +46,8 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     : 0;
   const funds = userInfo?.balance || BNToken.fromNumTokens("0");
   const isRegistered = !!userInfo?.username;
-  const betAmountError = betAmountNumber < 1 || betAmountNumber > Number(funds.toNumTokens());
+  const betAmountError =
+    betAmountNumber < 1 || betAmountNumber > Number(funds.toNumTokens());
 
   const loadMarket = async () => {
     const m = await getMarket(web3, marketaddress, marketindex);
@@ -51,11 +55,12 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   };
 
   const placeBet = async (yes: boolean) => {
-
     // Hack - if you bet 1 it is dangerously close to the min bet, and the
     // share calc code could have you betting 0.999. So add a safety 2% so
     // the txn doesn't fail. Can fix when a new version of the contract is out
-    const betTokens = BNToken.fromNumTokens(betAmount === '1' ? '1.02' : betAmount);
+    const betTokens = BNToken.fromNumTokens(
+      betAmount === "1" ? "1.02" : betAmount
+    );
 
     const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
@@ -152,39 +157,47 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             <Grid>
               <Grid.Row>
                 <Grid.Column width={13}>
-            <a
-              title={
-                "Created at " +
-                market.timestamp.toLocaleString() +
-                " (your local time)"
-              }
-              style={{ marginRight: "10px" }}
-            >
-              <Icon name="clock" color="green" />
-              Created{" "}
-              {formatDistance(new Date(market.timestamp), new Date(), {
-                addSuffix: true,
-              })}
-            </a>
-            &nbsp; &nbsp;
-            <a
-              title={
-                "Closes at " +
-                market.closesAt.toLocaleString() +
-                " (your local time)"
-              }
-            >
-              <Icon name="clock" color="black" />
-              Closes{" "}
-              {formatDistance(new Date(market.closesAt), new Date(), {
-                addSuffix: true,
-              })}
-            </a></Grid.Column>
-                <Grid.Column width={3} textAlign="right">
-                  { market.useraddress === firstAccount &&
-                  <Button size="small" primary>RESOLVE</Button> }
+                  <a
+                    title={
+                      "Created at " +
+                      market.timestamp.toLocaleString() +
+                      " (your local time)"
+                    }
+                    style={{ marginRight: "10px" }}
+                  >
+                    <Icon name="clock" color="green" />
+                    Created{" "}
+                    {formatDistance(new Date(market.timestamp), new Date(), {
+                      addSuffix: true,
+                    })}
+                  </a>
+                  &nbsp; &nbsp;
+                  <a
+                    title={
+                      "Closes at " +
+                      market.closesAt.toLocaleString() +
+                      " (your local time)"
+                    }
+                  >
+                    <Icon name="clock" color="black" />
+                    Closes{" "}
+                    {formatDistance(new Date(market.closesAt), new Date(), {
+                      addSuffix: true,
+                    })}
+                  </a>
                 </Grid.Column>
-            </Grid.Row>
+                <Grid.Column width={3} textAlign="right">
+                  {market.useraddress === firstAccount && (
+                    <Button
+                      size="small"
+                      primary
+                      onClick={() => setShowResolveModal(true)}
+                    >
+                      RESOLVE
+                    </Button>
+                  )}
+                </Grid.Column>
+              </Grid.Row>
             </Grid>
           </Card.Content>
         </Card>
@@ -265,6 +278,14 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
         Funds: <strong>P${funds.toNumTokens(0)}</strong>
       </p>
       {innards}
+      {showResolveModal && (
+        <ResolveModal
+          onClose={() => setShowResolveModal(false)}
+          marketIndex={marketindex}
+          web3Ref={web3Ref}
+          firstAccount={firstAccount}
+        />
+      )}  
     </Layout>
   );
 };
