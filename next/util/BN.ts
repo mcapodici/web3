@@ -24,6 +24,15 @@ function isString(s: any) {
   return typeof s === "string" || s instanceof String;
 }
 
+/** Used to round to the nearest 1, 10, 100 etc. */
+export function roundToNearest10x(bn: BN, pow: number) {
+  const factor = b(10).pow(b(pow));
+  return bn
+    .add(factor.div(b(2)))
+    .div(factor)
+    .mul(factor);
+}
+
 /**
  * Converts a string representation of a decimal number into an integer representation to the given
  * precision. When precicion is 18 this is an ether to wei converter.
@@ -115,13 +124,16 @@ export class BNToken {
 
   /** Returns the human representation, for example 1 token will be 1 */
   toNumTokens(numDecimals: number = BNToken.NUM_DECIMALS) {
-    const sandString = this.sand
+    const sandString = roundToNearest10x(
+      this.sand,
+      BNToken.NUM_DECIMALS - numDecimals
+    )
       .toString()
       .padStart(BNToken.NUM_DECIMALS + 1, "0");
 
     return (
       sandString.slice(0, sandString.length - BNToken.NUM_DECIMALS) +
-      "." +
+      (numDecimals === 0 ? "" : ".") +
       sandString.slice(
         sandString.length - BNToken.NUM_DECIMALS,
         sandString.length - BNToken.NUM_DECIMALS + numDecimals

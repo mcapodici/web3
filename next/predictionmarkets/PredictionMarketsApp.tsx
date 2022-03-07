@@ -37,7 +37,7 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
   return (
     <Layout>
     <p style={{float:'right'}}>
-      Funds: <strong>P${funds.toNumTokens(4)}</strong>
+      Funds: <strong>P${funds.toNumTokens(0)}</strong>
     </p>
       <Description />
       <Divider />

@@ -51,11 +51,17 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   };
 
   const placeBet = async (yes: boolean) => {
+
+    // Hack - if you bet 1 it is dangerously close to the min bet, and the
+    // share calc code could have you betting 0.999. So add a safety 2% so
+    // the txn doesn't fail. Can fix when a new version of the contract is out
+    const betTokens = BNToken.fromNumTokens(betAmount === '1' ? '1.02' : betAmount);
+
     const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
       marketaddress,
       marketindex,
-      BNToken.fromNumTokens(betAmount),
+      betTokens,
       yes
     );
 
@@ -200,7 +206,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             <Table.Cell>
               {b.outcome.toString() == "1" ? "YES" : "NO"}
             </Table.Cell>
-            <Table.Cell>{b.betsize.toNumTokens(4)}</Table.Cell>
+            <Table.Cell>{b.betsize.toNumTokens(0)}</Table.Cell>
             <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
           </Table.Row>
         ))}
@@ -243,7 +249,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   return (
     <Layout>
       <p style={{ float: "right" }}>
-        Funds: <strong>P${funds.toNumTokens(4)}</strong>
+        Funds: <strong>P${funds.toNumTokens(0)}</strong>
       </p>
       {innards}
     </Layout>
