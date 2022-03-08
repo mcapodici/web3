@@ -54,6 +54,7 @@ export interface IMarketInfo {
   sharesOf0: BNToken;
   sharesOf1: BNToken;
   resolved: boolean;
+  closed: boolean;
 }
 
 export function makeContractObject(web3: Web3) {
@@ -257,6 +258,8 @@ async function getMarketInternal(
     fromBlock: 1,
   });
 
+  const currentBlockNumber = await web3.eth.getBlockNumber();
+
   let market: IMarketInfo = {
     useraddress: marketaddress,
     username: username,
@@ -285,7 +288,8 @@ async function getMarketInternal(
     antePayout0: BNToken.fromNumTokens("0"), // Filled in after
     antePayout1: BNToken.fromNumTokens("0"), // Filled in after
     uniqueBettors: 0, // Filled in after
-    resolved: !!resolutionEvents.length
+    resolved: !!resolutionEvents.length,
+    closed: Number(m.closesAt) <= currentBlockNumber, // Filled in later (outside this function because you need to know which block)
   };
 
   market.ante0 = BNToken.fromSand(

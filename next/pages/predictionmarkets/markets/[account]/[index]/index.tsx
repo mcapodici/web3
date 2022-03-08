@@ -24,7 +24,6 @@ import {
 } from "semantic-ui-react";
 import { BNToken } from "util/BN";
 import siteWideData from "sitewide/SiteWideData.json";
-import BN from "bn.js";
 import { ResolveModal } from "predictionmarkets/ResolveModal";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
@@ -60,7 +59,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     // the txn doesn't fail. Can fix when a new version of the contract is out
     const betTokens = BNToken.fromNumTokens(betAmount);
 
-    console.log(betTokens.toNumTokens(4) + 'tokens');
+    console.log(betTokens.toNumTokens(4) + "tokens");
     const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
       marketaddress,
@@ -116,18 +115,21 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                           margin: "0 0 0.2em 0",
                         }}
                       >
-                        {market.resolved ? "RESOLVED" : market.impliedProb1.toFixed(0) + "%"}
+                        {market.resolved
+                          ? "RESOLVED"
+                          : market.impliedProb1.toFixed(0) + "%"}
                       </p>
-                      {!market.resolved &&
-                      <p
-                        style={{
-                          fontSize: "1em",
-                          lineHeight: "1em",
-                          margin: "0",
-                        }}
-                      >
-                        chance
-                      </p>}
+                      {!market.resolved && (
+                        <p
+                          style={{
+                            fontSize: "1em",
+                            lineHeight: "1em",
+                            margin: "0",
+                          }}
+                        >
+                          chance
+                        </p>
+                      )}
                     </span>
                   </Grid.Column>
                 </Grid.Row>
@@ -286,7 +288,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           web3Ref={web3Ref}
           firstAccount={firstAccount}
         />
-      )}  
+      )}
     </Layout>
   );
 };

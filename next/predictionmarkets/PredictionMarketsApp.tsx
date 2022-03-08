@@ -9,18 +9,30 @@ import {
   UserInfo,
   getMarkets,
 } from "ethereum/contracts/PredictionMarket";
-import { Button, Divider, Header, Icon, Message } from "semantic-ui-react";
+import {
+  Button,
+  Divider,
+  Form,
+} from "semantic-ui-react";
 import { RegisterModal } from "./RegisterModal";
 import { CreateMarket } from "./CreateMarket";
-import BN from "bn.js";
 import { Markets } from "./Markets";
 import { BNToken } from "util/BN";
+
+interface GetMarketOptions {
+  showClosed: boolean;
+  showResolved: boolean;
+}
 
 const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
   const web3 = web3Ref.current;
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [markets, setMarkets] = useState<any[]>([]);
+  const [marketOptions, setMarketOptions] = useState<GetMarketOptions>({
+    showClosed: false,
+    showResolved: false,
+  });
 
   const init = async () => {
     getUserInfo(web3, firstAccount).then(setUserInfo);
@@ -36,9 +48,9 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
 
   return (
     <Layout>
-    <p style={{float:'right'}}>
-      Funds: <strong>P${funds.toNumTokens(0)}</strong>
-    </p>
+      <p style={{ float: "right" }}>
+        Funds: <strong>P${funds.toNumTokens(0)}</strong>
+      </p>
       <Description />
       <Divider />
       {isRegistered && (
@@ -62,8 +74,41 @@ const PredictionMarketsApp = ({ web3Ref, firstAccount }: Web3Props) => {
         </>
       )}
       <h2>Markets</h2>
-      <Markets markets={markets} />
-
+      <Form>
+    <Form.Group>
+        <Form.Field>
+          <Form.Checkbox
+            label="Include Closed"
+            checked={marketOptions.showClosed}
+            onChange={(e, data) =>
+              setMarketOptions((mo) => ({
+                ...mo,
+                showClosed: data.checked || false,
+              }))
+            }
+          /></Form.Field>
+                 <Form.Field>
+ 
+          <Form.Checkbox
+            label="Include Resolved"
+            checked={marketOptions.showResolved}
+            onChange={(e, data) =>
+              setMarketOptions((mo) => ({
+                ...mo,
+                showResolved: data.checked || false,
+              }))
+            }
+          />
+        </Form.Field>
+        </Form.Group>
+        <Markets
+          markets={markets.filter(
+            (m) =>
+              (marketOptions.showResolved || !m.resolved) &&
+              (marketOptions.showClosed || !m.closed)
+          )}
+        />
+      </Form>
       {showRegisterModal && (
         <RegisterModal
           web3Ref={web3Ref}
