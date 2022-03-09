@@ -8,32 +8,37 @@ import {
   getUserInfo,
   UserInfo,
   getMarkets,
+  IMarketInfo,
 } from "ethereum/contracts/PredictionMarket";
-import {
-  Button,
-  Divider,
-  Form,
-} from "semantic-ui-react";
+import { Button, Divider, Form } from "semantic-ui-react";
 import { RegisterModal } from "predictionmarkets/RegisterModal";
 import { CreateMarket } from "predictionmarkets/CreateMarket";
 import { Markets } from "predictionmarkets/Markets";
 import { BNToken } from "util/BN";
 import type { NextPage } from "next";
 import { RequireWeb3Wrapper } from "sitewide/RequireWeb3Wrapper";
-interface GetMarketOptions {
-  showClosed: boolean;
-  showResolved: boolean;
+
+enum MarketFilterOption {
+  Newest = "Newest",
+  Closed = "Closed",
+  Resolved = "Resolved",
+  ClosingSoon = "Closing Soon",
 }
+
+const AllMarketFilterOptions = [
+  MarketFilterOption.Newest,
+  MarketFilterOption.Closed,
+  MarketFilterOption.Resolved,
+  MarketFilterOption.ClosingSoon,
+];
 
 const App = ({ web3Ref, firstAccount }: Web3Props) => {
   const web3 = web3Ref.current;
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [markets, setMarkets] = useState<any[]>([]);
-  const [marketOptions, setMarketOptions] = useState<GetMarketOptions>({
-    showClosed: false,
-    showResolved: false,
-  });
+  const [markets, setMarkets] = useState<IMarketInfo[]>([]);
+  const [marketFilterOption, setMarketFilterOption] =
+    useState<MarketFilterOption>(MarketFilterOption.Newest);
 
   const init = async () => {
     getUserInfo(web3, firstAccount).then(setUserInfo);
@@ -76,38 +81,45 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
       )}
       <h2>Markets</h2>
       <Form>
-    <Form.Group>
-        <Form.Field>
-          <Form.Checkbox
-            label="Include Closed"
-            checked={marketOptions.showClosed}
-            onChange={(e, data) =>
-              setMarketOptions((mo) => ({
-                ...mo,
-                showClosed: data.checked || false,
-              }))
-            }
-          /></Form.Field>
-                 <Form.Field>
- 
-          <Form.Checkbox
-            label="Include Resolved"
-            checked={marketOptions.showResolved}
-            onChange={(e, data) =>
-              setMarketOptions((mo) => ({
-                ...mo,
-                showResolved: data.checked || false,
-              }))
-            }
-          />
-        </Form.Field>
+        <Form.Group>
+          <Form.Field>
+            <Form.Dropdown
+              options={AllMarketFilterOptions.map((o) => ({
+                key: o,
+                value: o,
+                text: o,
+              }))}
+              onChange={(e, data) =>
+                setMarketFilterOption(data.value as MarketFilterOption)
+              }
+              value={marketFilterOption}
+            />
+          </Form.Field>
         </Form.Group>
         <Markets
-          markets={markets.filter(
-            (m) =>
-              (marketOptions.showResolved || !m.resolved) &&
-              (marketOptions.showClosed || !m.closed)
-          )}
+          markets={markets
+            .filter(
+              (m) =>
+                (marketFilterOption === MarketFilterOption.Closed &&
+                  m.closed) ||
+                (marketFilterOption === MarketFilterOption.ClosingSoon &&
+                  !m.closed &&
+                  !m.resolved) ||
+                (marketFilterOption === MarketFilterOption.Newest &&
+                  !m.closed &&
+                  !m.resolved) ||
+                (marketFilterOption === MarketFilterOption.Resolved &&
+                  m.resolved)
+            )
+            .sortACopy((m1, m2) => {
+              switch (marketFilterOption) {
+                case MarketFilterOption.ClosingSoon:
+                  return m1.closesAt.getTime() - m2.closesAt.getTime();
+
+                default:
+                  return m1.timestamp.getTime() - m2.timestamp.getTime();
+              }
+            })}
         />
       </Form>
       {showRegisterModal && (

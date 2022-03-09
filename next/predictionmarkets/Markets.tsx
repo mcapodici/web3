@@ -1,6 +1,6 @@
 import { Card, Icon, Image } from "semantic-ui-react";
 import siteWideData from "sitewide/SiteWideData.json";
-import { formatDistance } from "date-fns";
+import { format, formatDistance } from "date-fns";
 import Link from "next/link";
 import { IMarketInfo } from "ethereum/contracts/PredictionMarket";
 import { TruncateAndEllipse } from "util/String";
@@ -62,9 +62,7 @@ const Markets = ({ markets }: IMarketsProps) => {
             <Card.Content extra>
               <span
                 title={
-                  "Created at " +
-                  market.timestamp.toLocaleString() +
-                  " (your local time)"
+                  format(market.timestamp, "yyyy-MM-dd HH:mm:ss") // This is in browser time zone
                 }
                 style={{ marginRight: "10px" }}
               >
@@ -76,9 +74,7 @@ const Markets = ({ markets }: IMarketsProps) => {
               &nbsp; &nbsp;
               <span
                 title={
-                  "Closes at " +
-                  market.closesAt.toLocaleString() +
-                  " (your local time)"
+                  format(market.closesAt, "yyyy-MM-dd HH:mm:ss") // This is in browser time zone
                 }
               >
                 <Icon name="clock" color="black" />
