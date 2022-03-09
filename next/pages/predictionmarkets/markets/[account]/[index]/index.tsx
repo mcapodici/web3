@@ -11,19 +11,13 @@ import {
   UserInfo,
 } from "ethereum/contracts/PredictionMarket";
 import PredictionMarketsLayout from "predictionmarkets/PredictionMarketsLayout";
-import { formatDistance } from "date-fns";
 import {
   Button,
-  Card,
   Form,
-  Grid,
-  Icon,
-  Image,
   Input,
   Table,
 } from "semantic-ui-react";
 import { BNToken } from "util/BN";
-import siteWideData from "sitewide/SiteWideData.json";
 import { ResolveModal } from "predictionmarkets/ResolveModal";
 import useWindowDimensions from "util/Hooks";
 import Market from "predictionmarkets/Market";
@@ -142,6 +136,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             <Form error={!!betFormErrorMessage}>
               <Form.Field error={betAmountError}>
                 <Input
+                  fluid
                   label="P$"
                   labelPosition="left"
                   value={betAmount}
