@@ -1,6 +1,4 @@
-@media screen and (max-width: 768px) {
-  .hideIfNarrow {
-    display: none;
-    color: red;
-  }
+.container {
+  margin-top: 2em;
+  margin-bottom: 20em;
 }
