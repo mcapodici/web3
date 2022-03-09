@@ -115,7 +115,7 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
                   return m1.closesAt.getTime() - m2.closesAt.getTime();
 
                 default:
-                  return m1.timestamp.getTime() - m2.timestamp.getTime();
+                  return m2.timestamp.getTime() - m1.timestamp.getTime();
               }
             })}
         />
