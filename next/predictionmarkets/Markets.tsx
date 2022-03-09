@@ -50,7 +50,7 @@ const Markets = ({ markets }: IMarketsProps) => {
                 style={{ marginRight: "10px" }}
               >
                 <Icon name="money" color="yellow" />
-                {market.poolsize.toNumTokens(2)}
+                {market.poolsize.toNumTokens(0)}
               </a>
               <a title="Number of bettors, including market maker">
                 <Icon name="user" color="brown" />
