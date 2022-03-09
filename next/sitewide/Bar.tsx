@@ -37,7 +37,7 @@ const Bar = ({additionalSegments}: BarProps) => {
 
   return (
     <Segment>
-      <Grid columns={2} stackable textAlign="center">
+      <Grid columns={(1 + (additionalSegments?.length || 0)) as any} stackable textAlign="center">
         <Grid.Row verticalAlign="middle">
           <Grid.Column>
             <span style={{ color }}>
