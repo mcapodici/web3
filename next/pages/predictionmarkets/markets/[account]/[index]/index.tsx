@@ -11,12 +11,7 @@ import {
   UserInfo,
 } from "ethereum/contracts/PredictionMarket";
 import PredictionMarketsLayout from "predictionmarkets/PredictionMarketsLayout";
-import {
-  Button,
-  Form,
-  Input,
-  Table,
-} from "semantic-ui-react";
+import { Button, Form, Input, Table } from "semantic-ui-react";
 import { BNToken } from "util/BN";
 import { ResolveModal } from "predictionmarkets/ResolveModal";
 import useWindowDimensions from "util/Hooks";
@@ -79,6 +74,10 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     getUserInfo(web3, firstAccount).then(setUserInfo);
   }, []);
 
+  const [yesText, noText, dpForWidth] = windowDimensions.isNarrow
+    ? ["Y", "N", 2]
+    : ["YES", "NO", 4];
+
   return (
     <PredictionMarketsLayout
       username={userInfo?.username || "Unregistered Visitor"}
@@ -100,32 +99,38 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
             <Table.Header>
               <Table.HeaderCell>User</Table.HeaderCell>
               <Table.HeaderCell>Outcome</Table.HeaderCell>
-              <Table.HeaderCell>Bet Amount</Table.HeaderCell>
+              <Table.HeaderCell>Bet</Table.HeaderCell>
               <Table.HeaderCell>Shares</Table.HeaderCell>
               <Table.HeaderCell>Payout</Table.HeaderCell>
             </Table.Header>
             <Table.Row>
               <Table.Cell>{market.username}</Table.Cell>
-              <Table.Cell>ANTE - YES</Table.Cell>
+              <Table.Cell>
+                {windowDimensions.isNarrow ? "" : "ANTE - "}
+                {yesText}
+              </Table.Cell>
               <Table.Cell>{market.ante1.toNumTokens(0)}</Table.Cell>
-              <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{market.anteShares1.toNumTokens(dpForWidth)}</Table.Cell>
               <Table.Cell>{market.antePayout1.toNumTokens(0)}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>{market.username}</Table.Cell>
-              <Table.Cell>ANTE - NO</Table.Cell>
+              <Table.Cell>
+                {windowDimensions.isNarrow ? "" : "ANTE - "}
+                {noText}
+              </Table.Cell>
               <Table.Cell>{market.ante0.toNumTokens(0)}</Table.Cell>
-              <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{market.anteShares0.toNumTokens(dpForWidth)}</Table.Cell>
               <Table.Cell>{market.antePayout0.toNumTokens(0)}</Table.Cell>
             </Table.Row>
             {market.bets.map((b, i) => (
               <Table.Row key={i}>
                 <Table.Cell>{b.username}</Table.Cell>
                 <Table.Cell>
-                  {b.outcome.toString() == "1" ? "YES" : "NO"}
+                  {b.outcome.toString() == "1" ? yesText : noText}
                 </Table.Cell>
                 <Table.Cell>{b.betsize.toNumTokens(0)}</Table.Cell>
-                <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
+                <Table.Cell>{b.numberOfShares.toNumTokens(dpForWidth)}</Table.Cell>
                 <Table.Cell>{b.currentPayoutIfWin.toNumTokens(0)}</Table.Cell>
               </Table.Row>
             ))}
