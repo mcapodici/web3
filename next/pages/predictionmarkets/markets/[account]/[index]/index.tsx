@@ -85,100 +85,98 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     getUserInfo(web3, firstAccount).then(setUserInfo);
   }, []);
 
-  if (!market) {
-    return <p>Loading...</p>;
-  }
-
   return (
     <PredictionMarketsLayout
       username={userInfo?.username || "Unregistered Visitor"}
       funds={funds}
     >
-      <div>
-        <h1>Market</h1>
-        <Market
-          market={market}
-          onResolveClick={() => setShowResolveModal(true)}
-          showResolveButton={
-            !market.resolved && market.useraddress === firstAccount
-          }
-          forNarrowWidth={windowDimensions.isNarrow}
-        />
-        <h2>Bets</h2>
-        <Table>
-          <Table.Header>
-            <Table.HeaderCell>User</Table.HeaderCell>
-            <Table.HeaderCell>Outcome</Table.HeaderCell>
-            <Table.HeaderCell>Bet Amount</Table.HeaderCell>
-            <Table.HeaderCell>Shares</Table.HeaderCell>
-            <Table.HeaderCell>Payout</Table.HeaderCell>
-          </Table.Header>
-          <Table.Row>
-            <Table.Cell>{market.username}</Table.Cell>
-            <Table.Cell>ANTE - YES</Table.Cell>
-            <Table.Cell>{market.ante1.toNumTokens(0)}</Table.Cell>
-            <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
-            <Table.Cell>{market.antePayout1.toNumTokens(0)}</Table.Cell>
-          </Table.Row>
-          <Table.Row>
-            <Table.Cell>{market.username}</Table.Cell>
-            <Table.Cell>ANTE - NO</Table.Cell>
-            <Table.Cell>{market.ante0.toNumTokens(0)}</Table.Cell>
-            <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
-            <Table.Cell>{market.antePayout0.toNumTokens(0)}</Table.Cell>
-          </Table.Row>
-          {market.bets.map((b, i) => (
-            <Table.Row key={i}>
-              <Table.Cell>{b.username}</Table.Cell>
-              <Table.Cell>
-                {b.outcome.toString() == "1" ? "YES" : "NO"}
-              </Table.Cell>
-              <Table.Cell>{b.betsize.toNumTokens(0)}</Table.Cell>
-              <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
-              <Table.Cell>{b.currentPayoutIfWin.toNumTokens(0)}</Table.Cell>
+      {market ? (
+        <>
+          <h1>Market</h1>
+          <Market
+            market={market}
+            onResolveClick={() => setShowResolveModal(true)}
+            showResolveButton={
+              !market.resolved && market.useraddress === firstAccount
+            }
+            forNarrowWidth={windowDimensions.isNarrow}
+          />
+          <h2>Bets</h2>
+          <Table unstackable>
+            <Table.Header>
+              <Table.HeaderCell>User</Table.HeaderCell>
+              <Table.HeaderCell>Outcome</Table.HeaderCell>
+              <Table.HeaderCell>Bet Amount</Table.HeaderCell>
+              <Table.HeaderCell>Shares</Table.HeaderCell>
+              <Table.HeaderCell>Payout</Table.HeaderCell>
+            </Table.Header>
+            <Table.Row>
+              <Table.Cell>{market.username}</Table.Cell>
+              <Table.Cell>ANTE - YES</Table.Cell>
+              <Table.Cell>{market.ante1.toNumTokens(0)}</Table.Cell>
+              <Table.Cell>{market.anteShares1.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{market.antePayout1.toNumTokens(0)}</Table.Cell>
             </Table.Row>
-          ))}
-        </Table>
-
-        <h2>Place your bet</h2>
-        <p>The minimum bet size is 2</p>
-        {isRegistered ? (
-          <Form error={!!betFormErrorMessage}>
-            <Form.Field error={betAmountError}>
-              <Input
-                label="P$"
-                labelPosition="left"
-                value={betAmount}
-                onChange={(event) => setBetAmount(event.target.value)}
-                action={
-                  <>
-                    <Button
-                      style={{ marginLeft: "5px", marginRight: "5px" }}
-                      color="green"
-                      onClick={() => placeBet(true)}
-                    >
-                      Bet YES
-                    </Button>
-                    <Button color="pink" onClick={() => placeBet(false)}>
-                      Bet NO
-                    </Button>
-                  </>
-                }
-              ></Input>
-            </Form.Field>
-          </Form>
-        ) : (
-          <p>Register to bet</p>
-        )}
-      </div>
-
-      {showResolveModal && (
-        <ResolveModal
-          onClose={() => setShowResolveModal(false)}
-          marketIndex={marketindex}
-          web3Ref={web3Ref}
-          firstAccount={firstAccount}
-        />
+            <Table.Row>
+              <Table.Cell>{market.username}</Table.Cell>
+              <Table.Cell>ANTE - NO</Table.Cell>
+              <Table.Cell>{market.ante0.toNumTokens(0)}</Table.Cell>
+              <Table.Cell>{market.anteShares0.toNumTokens(4)}</Table.Cell>
+              <Table.Cell>{market.antePayout0.toNumTokens(0)}</Table.Cell>
+            </Table.Row>
+            {market.bets.map((b, i) => (
+              <Table.Row key={i}>
+                <Table.Cell>{b.username}</Table.Cell>
+                <Table.Cell>
+                  {b.outcome.toString() == "1" ? "YES" : "NO"}
+                </Table.Cell>
+                <Table.Cell>{b.betsize.toNumTokens(0)}</Table.Cell>
+                <Table.Cell>{b.numberOfShares.toNumTokens(4)}</Table.Cell>
+                <Table.Cell>{b.currentPayoutIfWin.toNumTokens(0)}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table>
+          <h2>Place your bet</h2>
+          <p>The minimum bet size is 2</p>
+          {isRegistered ? (
+            <Form error={!!betFormErrorMessage}>
+              <Form.Field error={betAmountError}>
+                <Input
+                  label="P$"
+                  labelPosition="left"
+                  value={betAmount}
+                  onChange={(event) => setBetAmount(event.target.value)}
+                  action={
+                    <>
+                      <Button
+                        style={{ marginLeft: "5px", marginRight: "5px" }}
+                        color="green"
+                        onClick={() => placeBet(true)}
+                      >
+                        Bet YES
+                      </Button>
+                      <Button color="pink" onClick={() => placeBet(false)}>
+                        Bet NO
+                      </Button>
+                    </>
+                  }
+                ></Input>
+              </Form.Field>
+            </Form>
+          ) : (
+            <p>Register to bet</p>
+          )}
+          {showResolveModal && (
+            <ResolveModal
+              onClose={() => setShowResolveModal(false)}
+              marketIndex={marketindex}
+              web3Ref={web3Ref}
+              firstAccount={firstAccount}
+            />
+          )}{" "}
+        </>
+      ) : (
+        <p>Loading...</p>
       )}
     </PredictionMarketsLayout>
   );
