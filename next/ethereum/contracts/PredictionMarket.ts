@@ -168,7 +168,8 @@ export async function createMarket(
   title: string,
   description: string,
   prob: number,
-  pool: BN
+  pool: BN,
+  closeDate: Date
 ) {
   const contract = makeContractObject(web3);
   const payload = { title, description };
@@ -180,7 +181,7 @@ export async function createMarket(
       multihash,
       pool,
       prob,
-      Math.floor(Date.now() / 1000) + 10000000
+      new BN(Math.floor(closeDate.getTime() / 1000))
     )
     .send({ from: address });
 }

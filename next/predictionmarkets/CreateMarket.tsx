@@ -6,10 +6,14 @@ import * as Contract from "ethereum/contracts/PredictionMarket";
 import { Context } from "sitewide/Context";
 import { AlertType } from "sitewide/alerts/AlertPanel";
 import { BNToken } from "util/BN";
+import { add as addDate, isValid, parse as parseDate } from "date-fns";
+import { format as formatDate } from "date-fns-tz";
 
 export interface CreateMarketProps extends Web3Props {
   funds: BNToken;
 }
+
+const dateFormat = "yyyy-MM-dd HH:mm:ss";
 
 export const CreateMarket = ({
   web3Ref,
@@ -20,19 +24,31 @@ export const CreateMarket = ({
   const [question, setQuestion] = useState("");
   const [prob, setProb] = useState("50");
   const [ante, setAnte] = useState("10");
+  const [closeDateText, setCloseDateText] = useState<string>(
+    formatDate(addDate(new Date(), { days: 7 }), dateFormat)
+  );
   const [creatingMarket, setCreatingMarket] = useState(false);
   const { addAlert } = useContext(Context);
 
-  const intPattern = /^[0-9]+$/
+  const intPattern = /^[0-9]+$/;
 
-  const probError = !intPattern.test(prob) || Number(prob) < 1 || Number(prob) > 99;
-  const anteBN =  BNToken.fromNumTokens(intPattern.test(ante) ? ante : '0');
-  const anteError = Number(anteBN.toNumTokens()) < 10 || Number(anteBN.toNumTokens()) > Number(funds.toNumTokens());
+  const probError =
+    !intPattern.test(prob) || Number(prob) < 1 || Number(prob) > 99;
+  const anteBN = BNToken.fromNumTokens(intPattern.test(ante) ? ante : "0");
+  const anteError =
+    Number(anteBN.toNumTokens()) < 10 ||
+    Number(anteBN.toNumTokens()) > Number(funds.toNumTokens());
+
+  const closeDate = parseDate(closeDateText, dateFormat, new Date());
+  console.log(closeDate);
+  const closeDateError = !closeDate || !isValid(closeDate) || closeDate < new Date();
 
   const errorMessage = probError
     ? "Initial probability must be a whole number between 1 and 99 inclusive."
     : anteError
     ? "Market ante must be a whole number between 10 and your current available funds."
+    : closeDateError
+    ? `Close date must be in the future and in the format ${dateFormat}.`
     : undefined;
 
   const createMarket = async () => {
@@ -44,7 +60,8 @@ export const CreateMarket = ({
         question,
         description,
         Number(prob),
-        new BN(ante).mul(new BN("1000000000000000000"))
+        new BN(ante).mul(new BN("1000000000000000000")),
+        closeDate!
       );
       addAlert({
         content: `Your market has been created.`,
@@ -109,6 +126,16 @@ export const CreateMarket = ({
                 value={ante}
                 onChange={(event) => {
                   setAnte(event.target.value);
+                }}
+              />
+            </Form.Field>
+            <Form.Field error={closeDateError}>
+              <label>Close Date ({formatDate(new Date(), 'z')})</label>
+              <Input
+                type="text"
+                value={closeDateText}
+                onChange={(event) => {
+                  setCloseDateText(event.target.value);
                 }}
               />
             </Form.Field>
