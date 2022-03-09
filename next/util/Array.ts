@@ -2,8 +2,11 @@ import BN from "bn.js";
 
 export const sum = (vals: number[]) => vals.reduce((p, c) => p + c, 0);
 export const sumBN = (vals: BN[]) => vals.reduce((p, c) => p.add(c), new BN(0));
-export const sortACopy = <T>(arr: T[], compareFn: (a: T, b: T) => number) =>
-  [...arr].sort(compareFn);
+export const sortACopy = <T>(arr: T[], compareFn: (a: T, b: T) => number) => {
+  const arrNew = [...arr];
+  arrNew.sort(compareFn);
+  return arrNew;
+}
 
 declare global {
   interface Array<T> {

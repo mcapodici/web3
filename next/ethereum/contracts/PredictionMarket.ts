@@ -125,7 +125,6 @@ export async function makeBet(
   numberOfShares: BN,
   isYes: boolean
 ) {
-  //  console.log({a:marketAddress, b:marketIndex, c:numberOfShares.toString(), d:isYes ? 1 : 0, e:bettorAddess});
   const contract = makeContractObject(web3);
   await contract.methods
     .makeBet(marketAddress, marketIndex, numberOfShares, isYes ? "1" : "0")
@@ -202,7 +201,6 @@ async function getBets(
 
   const betsWithUsername = await Promise.all(
     bets.map(async (bet) => {
-      console.log(bets);
       const username = await getUserNameWithCache(web3, bet.useraddress);
       return { ...bet, username };
     })
@@ -301,7 +299,6 @@ async function getMarketInternal(
   );
 
   const more = await getBets(web3, market);
-  console.log(more);
   market = { ...market, ...more };
 
   let moneyOn0 = market.ante0.asSand();

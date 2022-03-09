@@ -13,10 +13,8 @@ const Markets = ({ markets }: IMarketsProps) => {
   return (
     <Card.Group itemsPerRow={2}>
       {markets
-        .slice()
-        .sort((a, b) => b.blockNumber - a.blockNumber)
         .map((market) => (
-          <Card>
+          <Card key={market.useraddress + '_' + market.index}>
             <Card.Content>
               <Card.Header>
                 <Link

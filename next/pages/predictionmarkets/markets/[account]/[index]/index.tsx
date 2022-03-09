@@ -59,7 +59,6 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     // the txn doesn't fail. Can fix when a new version of the contract is out
     const betTokens = BNToken.fromNumTokens(betAmount);
 
-    console.log(betTokens.toNumTokens(4) + "tokens");
     const numberOfShares = await calculateNumbeOfSharesForMarket(
       web3,
       marketaddress,

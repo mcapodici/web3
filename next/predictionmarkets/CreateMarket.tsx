@@ -40,7 +40,6 @@ export const CreateMarket = ({
     Number(anteBN.toNumTokens()) > Number(funds.toNumTokens());
 
   const closeDate = parseDate(closeDateText, dateFormat, new Date());
-  console.log(closeDate);
   const closeDateError = !closeDate || !isValid(closeDate) || closeDate < new Date();
 
   const errorMessage = probError
