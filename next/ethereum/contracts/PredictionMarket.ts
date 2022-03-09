@@ -252,10 +252,10 @@ async function getMarketInternal(
   const cid = IPFS.contractMultiHashToCID(m.infoMultihash);
   const marketInfo = JSON.parse(await IPFS.fetchText(cid));
 
-  const resolutionEvents = await contract.getPastEvents("MarketResolved", {
-    filter: { useraddress: marketaddress, index },
+  const resolutionEvents = (await contract.getPastEvents("MarketResolved", {
+    filter: { useraddress: marketaddress },
     fromBlock: 1,
-  });
+  })).filter(e => e.returnValues.index === index);
 
   const currentBlockNumber = await web3.eth.getBlockNumber();
 
