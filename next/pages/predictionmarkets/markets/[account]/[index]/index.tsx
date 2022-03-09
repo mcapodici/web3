@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import { RequireWeb3Wrapper, Web3Props } from "sitewide/RequireWeb3Wrapper";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   calculateNumbeOfSharesForMarket,
   getMarket,
@@ -10,7 +10,7 @@ import {
   makeBet,
   UserInfo,
 } from "ethereum/contracts/PredictionMarket";
-import Layout from "sitewide/Layout";
+import PredictionMarketsLayout from "predictionmarkets/PredictionMarketsLayout";
 import { formatDistance } from "date-fns";
 import {
   Button,
@@ -275,10 +275,10 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   );
 
   return (
-    <Layout>
-      <p style={{ float: "right" }}>
-        Funds: <strong>P${funds.toNumTokens(0)}</strong>
-      </p>
+    <PredictionMarketsLayout
+      username={userInfo?.username || 'Unregistered Visitor'}
+      funds={funds}
+    >
       {innards}
       {showResolveModal && (
         <ResolveModal
@@ -288,7 +288,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           firstAccount={firstAccount}
         />
       )}
-    </Layout>
+    </PredictionMarketsLayout>
   );
 };
 export default RequireWeb3Wrapper(Index, () => <></>);

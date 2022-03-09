@@ -6,7 +6,7 @@ const Header = () => {
   return (
     <Menu>
       <Menu.Item>
-        <Link href="/">Web3 Home</Link>
+        <Link href="/"><><img src="/web3logo.png" alt="web3 examples" />&nbsp; examples</></Link>
       </Menu.Item>
       <Menu.Menu position="right">
         <Menu.Item>

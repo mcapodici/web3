@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Layout from "sitewide/Layout";
 import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import Description from "predictionmarkets/Description";
@@ -17,6 +16,7 @@ import { Markets } from "predictionmarkets/Markets";
 import { BNToken } from "util/BN";
 import type { NextPage } from "next";
 import { RequireWeb3Wrapper } from "sitewide/RequireWeb3Wrapper";
+import PredictionMarketsLayout from "predictionmarkets/PredictionMarketsLayout";
 
 enum MarketFilterOption {
   Newest = "Newest",
@@ -53,10 +53,7 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
   const isRegistered = !!userInfo?.username;
 
   return (
-    <Layout>
-      <p style={{ float: "right" }}>
-        Funds: <strong>P${funds.toNumTokens(0)}</strong>
-      </p>
+    <PredictionMarketsLayout username={userInfo?.username || 'Unregistered Visitor'} funds={funds}>
       <Description />
       <Divider />
       {isRegistered && (
@@ -81,9 +78,10 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
       )}
       <h2>Markets</h2>
       <Form>
-        <Form.Group>
           <Form.Field>
             <Form.Dropdown
+    fluid
+    selection
               options={AllMarketFilterOptions.map((o) => ({
                 key: o,
                 value: o,
@@ -95,7 +93,7 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
               value={marketFilterOption}
             />
           </Form.Field>
-        </Form.Group>
+        <Divider />
         <Markets
           markets={markets
             .filter(
@@ -139,7 +137,7 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
           }
         />
       </p>
-    </Layout>
+    </PredictionMarketsLayout>
   );
 };
 

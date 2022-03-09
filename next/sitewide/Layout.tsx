@@ -1,32 +1,23 @@
 import React, { useContext } from "react";
-import { Container, Grid, Icon, Message } from "semantic-ui-react";
+import { Container } from "semantic-ui-react";
 import { AlertPanel } from "./alerts/AlertPanel";
 import { Context } from "./Context";
 import Header from "./Header";
-import ShortAddressWithLink from "./ShortAddressWithLink";
-import SideNav from "./Sidenav";
+import Bar from "./Bar";
 
 interface Props {
   children?: React.ReactNode;
+  additionalSegments?:  React.ReactNode[]
 }
 
-const Layout = (props: Props) => {  
-
-  const {alerts, dismissAlert} = useContext(Context);
+const Layout = (props: Props) => {
+  const { alerts, dismissAlert } = useContext(Context);
   return (
     <Container>
       <Header />
-      <Grid stackable >
-        <Grid.Row columns={2}>
-          <Grid.Column width={4}>
-            <SideNav />
-          </Grid.Column>
-          <Grid.Column width={12}>
-            <AlertPanel alerts={alerts} onDismiss={dismissAlert} />
-            {props.children}
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
+      <Bar additionalSegments={props.additionalSegments} />
+      <AlertPanel alerts={alerts} onDismiss={dismissAlert} />
+      {props.children}
     </Container>
   );
 };

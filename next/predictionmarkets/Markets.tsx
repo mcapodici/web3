@@ -11,7 +11,7 @@ export interface IMarketsProps {
 
 const Markets = ({ markets }: IMarketsProps) => {
   return (
-    <Card.Group itemsPerRow={2}>
+    <Card.Group stackable itemsPerRow={2}>
       {markets
         .map((market) => (
           <Card key={market.useraddress + '_' + market.index}>
