@@ -1,5 +1,12 @@
 import { useContext, useState } from "react";
-import { Button, Form, Input, Message } from "semantic-ui-react";
+import {
+  Button,
+  Dimmer,
+  Form,
+  Input,
+  Loader,
+  Message,
+} from "semantic-ui-react";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import BN from "bn.js";
 import * as Contract from "ethereum/contracts/PredictionMarket";
@@ -15,6 +22,43 @@ export interface CreateMarketProps extends Web3Props {
 
 const dateFormat = "yyyy-MM-dd HH:mm:ss";
 
+let id = 1;
+
+const useWeb3Action = () => {
+  const context = useContext(Context);
+  const start = async (
+    pendingMessageContent: string,
+    pendingMessageHeader: string,
+    action: () => Promise<void>
+  ) => {
+    const thisId = id;
+    try {
+      id++;
+      context.addAlert({
+        content: pendingMessageContent,
+        header: pendingMessageHeader,
+        type: AlertType.Negative,
+        uniqueId: thisId.toString(),
+        dismissable: false,
+        loading: true,
+      });
+      await action();
+    } catch (ex: any) {
+      context.addAlert({
+        content: "Error details: " + ex?.message,
+        header: pendingMessageHeader + " error occurred",
+        type: AlertType.Negative,
+        uniqueId: "predictionmarket.createmarket.error",
+        dismissable: true,
+        loading: false,
+      });
+    }
+    context.dismissAlert(thisId.toString());
+  };
+
+  return start;
+};
+
 export const CreateMarket = ({
   web3Ref,
   firstAccount,
@@ -24,11 +68,10 @@ export const CreateMarket = ({
   const [question, setQuestion] = useState("");
   const [prob, setProb] = useState("50");
   const [ante, setAnte] = useState("10");
+  const web3Action = useWeb3Action();
   const [closeDateText, setCloseDateText] = useState<string>(
     formatDate(addDate(new Date(), { days: 7 }), dateFormat)
   );
-  const [creatingMarket, setCreatingMarket] = useState(false);
-  const { addAlert } = useContext(Context);
 
   const intPattern = /^[0-9]+$/;
 
@@ -40,7 +83,8 @@ export const CreateMarket = ({
     Number(anteBN.toNumTokens()) > Number(funds.toNumTokens());
 
   const closeDate = parseDate(closeDateText, dateFormat, new Date());
-  const closeDateError = !closeDate || !isValid(closeDate) || closeDate < new Date();
+  const closeDateError =
+    !closeDate || !isValid(closeDate) || closeDate < new Date();
 
   const errorMessage = probError
     ? "Initial probability must be a whole number between 1 and 99 inclusive."
@@ -51,32 +95,20 @@ export const CreateMarket = ({
     : undefined;
 
   const createMarket = async () => {
-    setCreatingMarket(true);
-    try {
-      await Contract.createMarket(
-        web3Ref.current,
-        firstAccount,
-        question,
-        description,
-        Number(prob),
-        new BN(ante).mul(new BN("1000000000000000000")),
-        closeDate!
-      );
-      addAlert({
-        content: `Your market has been created.`,
-        header: "Market Created",
-        type: AlertType.Positive,
-        uniqueId: "predictionmarket.createmarket.success",
-      });
-    } catch (ex: any) {
-      addAlert({
-        content: "Details from provider: " + ex.message,
-        header: "Error occurred during account creation",
-        type: AlertType.Negative,
-        uniqueId: "predictionmarket.createmarket.error",
-      });
-    }
-    setCreatingMarket(false);
+    web3Action(
+      "The market is being created. Please follow the steps shown by your Ethereum provider.",
+      "Creating Market",
+      () =>
+        Contract.createMarket(
+          web3Ref.current,
+          firstAccount,
+          question,
+          description,
+          Number(prob),
+          new BN(ante).mul(new BN("1000000000000000000")),
+          closeDate!
+        )
+    );
   };
 
   return (
@@ -129,7 +161,7 @@ export const CreateMarket = ({
               />
             </Form.Field>
             <Form.Field error={closeDateError}>
-              <label>Close Date ({formatDate(new Date(), 'z')})</label>
+              <label>Close Date ({formatDate(new Date(), "z")})</label>
               <Input
                 type="text"
                 value={closeDateText}
@@ -144,7 +176,6 @@ export const CreateMarket = ({
               content={errorMessage}
             />
             <Button
-              loading={creatingMarket}
               primary
               disabled={!!errorMessage && !!description}
               onClick={() => {

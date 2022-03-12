@@ -5,10 +5,10 @@ import { Context } from "./Context";
 import NotConnectedReason from "./NotConnectedReason";
 
 export interface BarProps {
-  additionalSegments?:  React.ReactNode[]
+  additionalSegments?: React.ReactNode[];
 }
 
-const Bar = ({additionalSegments}: BarProps) => {
+const Bar = ({ additionalSegments }: BarProps) => {
   const { web3Status } = useContext(Context);
 
   function notConnectedReasonText(notConnectedReason: NotConnectedReason) {
@@ -37,7 +37,11 @@ const Bar = ({additionalSegments}: BarProps) => {
 
   return (
     <Segment>
-      <Grid columns={(1 + (additionalSegments?.length || 0)) as any} stackable textAlign="center">
+      <Grid
+        columns={(1 + (additionalSegments?.length || 0)) as any}
+        stackable
+        textAlign="center"
+      >
         <Grid.Row verticalAlign="middle">
           <Grid.Column>
             <span style={{ color }}>
@@ -48,9 +52,9 @@ const Bar = ({additionalSegments}: BarProps) => {
               <span style={{ marginLeft: "5px" }}>{info}</span>
             </span>
           </Grid.Column>
-          {
-            additionalSegments?.map(s => <Grid.Column>{s}</Grid.Column>)
-          }
+          {additionalSegments?.map((s, i) => (
+            <Grid.Column key={i}>{s}</Grid.Column>
+          ))}
         </Grid.Row>
       </Grid>
     </Segment>
