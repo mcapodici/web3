@@ -12,6 +12,7 @@ const useWeb3Action = () => {
     action: () => Promise<void>
   ) => {
     const thisId = id;
+    let success = false;
     try {
       context.dismissAlert("predictionmarket.web3action.success");
       context.dismissAlert("predictionmarket.web3action.fail");
@@ -25,6 +26,7 @@ const useWeb3Action = () => {
         loading: true,
       });
       await action();
+      success = true;
       context.addAlert({
         content: "Transaction Success",
         header: pendingMessageHeader + " success",
@@ -44,6 +46,7 @@ const useWeb3Action = () => {
       });
     }
     context.dismissAlert(thisId.toString());
+    return success;
   };
 
   return start;

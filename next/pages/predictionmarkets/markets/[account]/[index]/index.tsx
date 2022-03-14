@@ -42,11 +42,6 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const betAmountError =
     betAmountNumber < 2 || betAmountNumber > Number(funds.toNumTokens());
 
-  const loadMarket = async () => {
-    const m = await getMarket(web3, marketaddress, marketindex);
-    setMarket(m);
-  };
-
   const placeBet = async (yes: boolean) => {
     const betTokens = BNToken.fromNumTokens(betAmount);
 
@@ -58,7 +53,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
       yes
     );
 
-    web3Action(
+    const success = await web3Action(
       "Your bet is being placed. Please follow the steps shown by your Ethereum provider.",
       "Placing Bet",
       () =>
@@ -71,12 +66,19 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           yes
         )
     );
+
+    if (success) {
+      getMarket(web3, marketaddress, marketindex).then(setMarket);
+    }
   };
 
   useEffect(() => {
-    loadMarket();
+    getMarket(web3, marketaddress, marketindex).then(setMarket);
+  }, [web3, marketaddress, marketindex]);
+
+  useEffect(() => {
     getUserInfo(web3, firstAccount).then(setUserInfo);
-  }, []);
+  }, [web3, firstAccount]);
 
   const [yesText, noText, dpForWidth] = windowDimensions.isNarrow
     ? ["Y", "N", 2]
