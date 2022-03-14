@@ -6,6 +6,7 @@ import useWeb3Action from "sitewide/hooks/useWeb3Action";
 
 export interface RegisterModalProps extends Web3Props {
   onClose: () => void;
+  onResolved: () => void;
   marketIndex: number;
 }
 
@@ -14,13 +15,14 @@ const ResolveModal = ({
   firstAccount,
   marketIndex,
   onClose,
+  onResolved,
 }: RegisterModalProps) => {
   const web3Action = useWeb3Action();
 
   const resolve = async (isYes: boolean) => {
     onClose();
-    await web3Action(
-      "Your market is being resolved. Please follow the steps shown by your Ethereum provider.",
+    const success = await web3Action(
+      "Your market is being resolved.",
       "Resolving Market",
       () =>
         Contract.resolve(
@@ -30,6 +32,8 @@ const ResolveModal = ({
           isYes ? 1 : 0
         )
     );
+    if (success)
+      onResolved();
   };
 
   return (

@@ -56,7 +56,7 @@ export const CreateMarket = ({
 
   const createMarket = async () => {
     web3Action(
-      "Your market is being created. Please follow the steps shown by your Ethereum provider.",
+      "Your market is being created.",
       "Creating Market",
       () =>
         Contract.createMarket(

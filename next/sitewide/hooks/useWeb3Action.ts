@@ -11,6 +11,8 @@ const useWeb3Action = () => {
     pendingMessageHeader: string,
     action: () => Promise<void>
   ) => {
+    const pendingMessageContentWithExtra = pendingMessageContent +
+       " Please follow the steps shown by your Ethereum provider, and then wait for the transaction to confirm which can take up to 30 seconds."
     const thisId = id;
     let success = false;
     try {
@@ -18,7 +20,7 @@ const useWeb3Action = () => {
       context.dismissAlert("predictionmarket.web3action.fail");
       id++;
       context.addAlert({
-        content: pendingMessageContent,
+        content: pendingMessageContentWithExtra,
         header: pendingMessageHeader,
         type: AlertType.Negative,
         uniqueId: thisId.toString(),

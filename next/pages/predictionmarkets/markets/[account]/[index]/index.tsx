@@ -33,7 +33,6 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
 
   const intPattern = /^[0-9]+$/;
 
-  const web3 = web3Ref.current;
   const betAmountNumber = intPattern.test(betAmount)
     ? new Number(betAmount)
     : 0;
@@ -46,7 +45,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     const betTokens = BNToken.fromNumTokens(betAmount);
 
     const numberOfShares = await calculateNumbeOfSharesForMarket(
-      web3,
+      web3Ref.current,
       marketaddress,
       marketindex,
       betTokens,
@@ -54,11 +53,11 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     );
 
     const success = await web3Action(
-      "Your bet is being placed. Please follow the steps shown by your Ethereum provider.",
+      "Your bet is being placed.",
       "Placing Bet",
       () =>
         makeBet(
-          web3,
+          web3Ref.current,
           firstAccount,
           marketaddress,
           marketindex,
@@ -68,17 +67,17 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
     );
 
     if (success) {
-      getMarket(web3, marketaddress, marketindex).then(setMarket);
+      getMarket(web3Ref.current, marketaddress, marketindex).then(setMarket);
     }
   };
 
   useEffect(() => {
-    getMarket(web3, marketaddress, marketindex).then(setMarket);
-  }, [web3, marketaddress, marketindex]);
+    getMarket(web3Ref.current, marketaddress, marketindex).then(setMarket);
+  }, [web3Ref, marketaddress, marketindex]);
 
   useEffect(() => {
-    getUserInfo(web3, firstAccount).then(setUserInfo);
-  }, [web3, firstAccount]);
+    getUserInfo(web3Ref.current, firstAccount).then(setUserInfo);
+  }, [web3Ref, firstAccount]);
 
   const [yesText, noText, dpForWidth] = windowDimensions.isNarrow
     ? ["Y", "N", 2]
@@ -181,6 +180,11 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
           {showResolveModal && (
             <ResolveModal
               onClose={() => setShowResolveModal(false)}
+              onResolved={() => {
+                getMarket(web3Ref.current, marketaddress, marketindex).then(
+                  setMarket
+                );
+              }}
               marketIndex={marketindex}
               web3Ref={web3Ref}
               firstAccount={firstAccount}
