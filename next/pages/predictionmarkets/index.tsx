@@ -33,21 +33,19 @@ const AllMarketFilterOptions = [
 ];
 
 const App = ({ web3Ref, firstAccount }: Web3Props) => {
-  const web3 = web3Ref.current;
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [markets, setMarkets] = useState<IMarketInfo[]>([]);
   const [marketFilterOption, setMarketFilterOption] =
     useState<MarketFilterOption>(MarketFilterOption.Newest);
 
-  const init = async () => {
-    getUserInfo(web3, firstAccount).then(setUserInfo);
-    getMarkets(web3).then(setMarkets);
-  };
-
   useEffect(() => {
-    init();
-  }, [firstAccount]);
+    getUserInfo(web3Ref.current, firstAccount).then(setUserInfo);
+  }, [web3Ref, firstAccount]);
+  
+  useEffect(() => {
+    getMarkets(web3Ref.current).then(setMarkets);
+  }, [web3Ref]);
 
   const funds = userInfo?.balance || BNToken.fromNumTokens("0");
   const isRegistered = !!userInfo?.username;
