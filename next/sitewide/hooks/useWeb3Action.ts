@@ -13,6 +13,8 @@ const useWeb3Action = () => {
   ) => {
     const thisId = id;
     try {
+      context.dismissAlert("predictionmarket.web3action.success");
+      context.dismissAlert("predictionmarket.web3action.fail");
       id++;
       context.addAlert({
         content: pendingMessageContent,
