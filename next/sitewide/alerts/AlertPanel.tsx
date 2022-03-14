@@ -24,14 +24,7 @@ export interface AlertPanelProps {
 export const AlertPanel = ({ alerts, onDismiss }: AlertPanelProps) => {
   const alertsComponents = alerts.map(
     ({ type, uniqueId, header, content, dismissable, loading }) => (
-      // <Message icon
-      //   key={uniqueId}
-      //   positive={type === AlertType.Positive}
-      //   negative={type === AlertType.Negative}
-      //   header={header}
-      //   content={content}
-      //   onDismiss={dismissable ? () => onDismiss(uniqueId) : undefined}
-      // />
+      
       <Message
         icon={loading}
         key={uniqueId}
@@ -49,8 +42,11 @@ export const AlertPanel = ({ alerts, onDismiss }: AlertPanelProps) => {
   );
 
   return (
-    <Transition.Group as={"div"} duration={500}>
+    <>
       {alertsComponents}
-    </Transition.Group>
+    </>
+    // Wanted to wrap this in <Transition.Group as={"span"} duration={500}></Transition.Group> but
+    // there seems to be a bug where this stops the icon being in the correct position as it overrides
+    // the flexbox.
   );
 };
