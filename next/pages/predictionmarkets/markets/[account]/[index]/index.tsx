@@ -16,6 +16,7 @@ import { BNToken } from "util/BN";
 import { ResolveModal } from "predictionmarkets/ResolveModal";
 import useWindowDimensions from "util/Hooks";
 import Market from "predictionmarkets/Market";
+import useWeb3Action from "sitewide/hooks/useWeb3Action";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const windowDimensions = useWindowDimensions();
@@ -23,6 +24,7 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const [betAmount, setBetAmount] = useState("2");
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
   const [showResolveModal, setShowResolveModal] = useState(false);
+  const web3Action = useWeb3Action();
 
   const r = useRouter();
   const marketaddress = r.query.account as string;
@@ -46,9 +48,6 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   };
 
   const placeBet = async (yes: boolean) => {
-    // Hack - if you bet 1 it is dangerously close to the min bet, and the
-    // share calc code could have you betting 0.999. So add a safety 2% so
-    // the txn doesn't fail. Can fix when a new version of the contract is out
     const betTokens = BNToken.fromNumTokens(betAmount);
 
     const numberOfShares = await calculateNumbeOfSharesForMarket(
@@ -59,13 +58,18 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
       yes
     );
 
-    await makeBet(
-      web3,
-      firstAccount,
-      marketaddress,
-      marketindex,
-      numberOfShares.asSand(),
-      yes
+    web3Action(
+      "Your bet is being placed. Please follow the steps shown by your Ethereum provider.",
+      "Placing Bet",
+      () =>
+        makeBet(
+          web3,
+          firstAccount,
+          marketaddress,
+          marketindex,
+          numberOfShares.asSand(),
+          yes
+        )
     );
   };
 
@@ -110,7 +114,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                 {yesText}
               </Table.Cell>
               <Table.Cell>{market.ante1.toNumTokens(0)}</Table.Cell>
-              <Table.Cell>{market.anteShares1.toNumTokens(dpForWidth)}</Table.Cell>
+              <Table.Cell>
+                {market.anteShares1.toNumTokens(dpForWidth)}
+              </Table.Cell>
               <Table.Cell>{market.antePayout1.toNumTokens(0)}</Table.Cell>
             </Table.Row>
             <Table.Row>
@@ -120,7 +126,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                 {noText}
               </Table.Cell>
               <Table.Cell>{market.ante0.toNumTokens(0)}</Table.Cell>
-              <Table.Cell>{market.anteShares0.toNumTokens(dpForWidth)}</Table.Cell>
+              <Table.Cell>
+                {market.anteShares0.toNumTokens(dpForWidth)}
+              </Table.Cell>
               <Table.Cell>{market.antePayout0.toNumTokens(0)}</Table.Cell>
             </Table.Row>
             {market.bets.map((b, i) => (
@@ -130,7 +138,9 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
                   {b.outcome.toString() == "1" ? yesText : noText}
                 </Table.Cell>
                 <Table.Cell>{b.betsize.toNumTokens(0)}</Table.Cell>
-                <Table.Cell>{b.numberOfShares.toNumTokens(dpForWidth)}</Table.Cell>
+                <Table.Cell>
+                  {b.numberOfShares.toNumTokens(dpForWidth)}
+                </Table.Cell>
                 <Table.Cell>{b.currentPayoutIfWin.toNumTokens(0)}</Table.Cell>
               </Table.Row>
             ))}

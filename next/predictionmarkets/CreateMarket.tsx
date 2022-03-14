@@ -1,63 +1,23 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import {
   Button,
-  Dimmer,
   Form,
   Input,
-  Loader,
   Message,
 } from "semantic-ui-react";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
 import BN from "bn.js";
 import * as Contract from "ethereum/contracts/PredictionMarket";
-import { Context } from "sitewide/Context";
-import { AlertType } from "sitewide/alerts/AlertPanel";
 import { BNToken } from "util/BN";
 import { add as addDate, isValid, parse as parseDate } from "date-fns";
 import { format as formatDate } from "date-fns-tz";
+import useWeb3Action from "sitewide/hooks/useWeb3Action";
 
 export interface CreateMarketProps extends Web3Props {
   funds: BNToken;
 }
 
 const dateFormat = "yyyy-MM-dd HH:mm:ss";
-
-let id = 1;
-
-const useWeb3Action = () => {
-  const context = useContext(Context);
-  const start = async (
-    pendingMessageContent: string,
-    pendingMessageHeader: string,
-    action: () => Promise<void>
-  ) => {
-    const thisId = id;
-    try {
-      id++;
-      context.addAlert({
-        content: pendingMessageContent,
-        header: pendingMessageHeader,
-        type: AlertType.Negative,
-        uniqueId: thisId.toString(),
-        dismissable: false,
-        loading: true,
-      });
-      await action();
-    } catch (ex: any) {
-      context.addAlert({
-        content: "Error details: " + ex?.message,
-        header: pendingMessageHeader + " error occurred",
-        type: AlertType.Negative,
-        uniqueId: "predictionmarket.createmarket.error",
-        dismissable: true,
-        loading: false,
-      });
-    }
-    context.dismissAlert(thisId.toString());
-  };
-
-  return start;
-};
 
 export const CreateMarket = ({
   web3Ref,
@@ -96,7 +56,7 @@ export const CreateMarket = ({
 
   const createMarket = async () => {
     web3Action(
-      "The market is being created. Please follow the steps shown by your Ethereum provider.",
+      "Your market is being created. Please follow the steps shown by your Ethereum provider.",
       "Creating Market",
       () =>
         Contract.createMarket(
