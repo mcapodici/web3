@@ -15,6 +15,7 @@ import useWeb3Action from "sitewide/hooks/useWeb3Action";
 
 export interface CreateMarketProps extends Web3Props {
   funds: BNToken;
+  onMarketCreated: () => void;
 }
 
 const dateFormat = "yyyy-MM-dd HH:mm:ss";
@@ -23,6 +24,7 @@ export const CreateMarket = ({
   web3Ref,
   firstAccount,
   funds,
+  onMarketCreated
 }: CreateMarketProps) => {
   const [description, setDescription] = useState("");
   const [question, setQuestion] = useState("");
@@ -55,7 +57,7 @@ export const CreateMarket = ({
     : undefined;
 
   const createMarket = async () => {
-    web3Action(
+    const success = await web3Action(
       "Your market is being created.",
       "Creating Market",
       () =>
@@ -69,6 +71,8 @@ export const CreateMarket = ({
           closeDate!
         )
     );
+    if (success)
+    onMarketCreated();
   };
 
   return (

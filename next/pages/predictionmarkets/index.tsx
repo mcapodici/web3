@@ -61,6 +61,7 @@ const App = ({ web3Ref, firstAccount }: Web3Props) => {
             web3Ref={web3Ref}
             firstAccount={firstAccount}
             funds={funds}
+            onMarketCreated={() => {getMarkets(web3Ref.current).then(setMarkets)}}
           />
         </>
       )}
