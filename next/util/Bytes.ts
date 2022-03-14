@@ -7,5 +7,9 @@ export function stringToAsciiBytes32(i: string) {
 
 export function asciiBytes32ToString(bytes: string) {
   const buffer = Buffer.from(bytes.substring(2), "hex");
-  return buffer.toString('ascii').replaceAll(String.fromCharCode(0),'');
+  return buffer.toString("ascii").replaceAll(String.fromCharCode(0), "");
 }
+
+export const zeroAddress = "0x0000000000000000000000000000000000000000";
+export const zero32Byte =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";

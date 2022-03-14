@@ -13,11 +13,14 @@ export async function addText(text: string) {
 }
 
 export async function fetchText(cid: CID) {
-  const res = await fetch(
-    siteWideData.ipfsGetTemplate.replace("{0}", cid.toV1().toString())
-  );
-  const txt = await res.text();
-  return txt;
+  try {
+    const res = await fetch(
+      siteWideData.ipfsGetTemplate.replace("{0}", cid.toV1().toString())
+    );
+    return await res.text();
+  } catch (ex) {
+    return undefined;
+  }
 }
 
 export class IPFSError extends Error {

@@ -2,18 +2,29 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import contractJson from "./PredictionMarket.json";
 import siteWideData from "sitewide/SiteWideData.json";
-import { asciiBytes32ToString, stringToAsciiBytes32 } from "util/Bytes";
+import {
+  asciiBytes32ToString,
+  stringToAsciiBytes32,
+  zero32Byte,
+  zeroAddress,
+} from "util/Bytes";
 import * as IPFS from "sitewide/IPFS";
 import BN from "bn.js";
 import { sumBN } from "util/Array";
 import { calculateSharesForBetAmount, payout } from "util/Math";
 import { b, BNToken, bt } from "util/BN";
+import { safeJSONParse } from "util/String";
 
 export interface UserInfo {
   balance: BNToken;
   numberOfMarkets: string;
   userinfoMultihash: string;
   username: string;
+}
+
+export interface UserProfile {
+  username: string;
+  bio: string;
 }
 
 export interface Bet {
@@ -57,6 +68,10 @@ export interface IMarketInfo {
   closed: boolean;
 }
 
+export interface IUserIPFSInfo {
+  bio?: string;
+}
+
 export function makeContractObject(web3: Web3) {
   return new web3.eth.Contract(
     contractJson.abi as AbiItem[],
@@ -76,7 +91,7 @@ export async function register(
 
   let multihash = zero32Byte;
   if (bio && bio.length) {
-    const payload = { bio };
+    const payload: IUserIPFSInfo = { bio };
     const ipfsResult = await IPFS.addText(JSON.stringify(payload));
     multihash = IPFS.getMultihashForContract(ipfsResult);
   }
@@ -87,12 +102,12 @@ export async function register(
     .send({ from: address });
 }
 
-const userNameCache: { [username: string]: string } = {};
+const userNameCache: { [username: string]: string | null } = {};
 
 export async function getUserNameWithCache(web3: Web3, address: string) {
   if (!userNameCache[address]) {
     const ui = await getUserInfo(web3, address);
-    userNameCache[address] = ui.username;
+    userNameCache[address] = ui ? ui.username : null;
   }
   return userNameCache[address];
 }
@@ -131,12 +146,49 @@ export async function makeBet(
     .send({ from: bettorAddess });
 }
 
+export async function getUserProfileForUserName(
+  web3: Web3,
+  userName: string
+): Promise<UserProfile | undefined> {
+  const contract = makeContractObject(web3);
+  const address = await contract.methods
+    .usernames(stringToAsciiBytes32(userName))
+    .call();
+
+  if (address === zeroAddress) return undefined;
+
+  const userInfo = await getUserInfo(web3, address);
+
+  if (!userInfo) return undefined;
+
+  console.log(userInfo);
+
+  let bio = undefined;
+  if (userInfo.userinfoMultihash !== zero32Byte) {
+    const cid = IPFS.contractMultiHashToCID(userInfo.userinfoMultihash);
+    const text = await IPFS.fetchText(cid);
+
+    if (text) {
+      const userIPFSInfo = safeJSONParse(text) as IUserIPFSInfo;
+
+      bio =
+        userIPFSInfo.bio && typeof userIPFSInfo.bio === "string"
+          ? userIPFSInfo.bio
+          : "";
+    }
+  }
+
+  return { username: userInfo.username, bio } as UserProfile;
+}
+
 export async function getUserInfo(
   web3: Web3,
   address: string
-): Promise<UserInfo> {
+): Promise<UserInfo | undefined> {
   const contract = makeContractObject(web3);
   const result = await contract.methods.getUser(address).call();
+
+  if (result.username === zero32Byte) return undefined;
 
   return {
     username: asciiBytes32ToString(result.username),
@@ -145,10 +197,6 @@ export async function getUserInfo(
     userinfoMultihash: result.userinfoMultihash,
   };
 }
-
-const zeroAddress = "0x0000000000000000000000000000000000000000";
-const zero32Byte =
-  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export async function getAccountForUsername(
   web3: Web3,
@@ -250,26 +298,29 @@ async function getMarketInternal(
   const username = await getUserNameWithCache(web3, marketaddress);
 
   const cid = IPFS.contractMultiHashToCID(m.infoMultihash);
-  const marketInfo = JSON.parse(await IPFS.fetchText(cid));
+  const text =await IPFS.fetchText(cid);
+  const marketInfo = text ? safeJSONParse(text) : undefined;
 
-  const resolutionEvents = (await contract.getPastEvents("MarketResolved", {
-    filter: { useraddress: marketaddress },
-    fromBlock: 1,
-  })).filter(e => e.returnValues.index === index);
+  const resolutionEvents = (
+    await contract.getPastEvents("MarketResolved", {
+      filter: { useraddress: marketaddress },
+      fromBlock: 1,
+    })
+  ).filter((e) => e.returnValues.index === index);
 
   const currentBlockNumber = await web3.eth.getBlockNumber();
 
   let market: IMarketInfo = {
     useraddress: marketaddress,
-    username: username,
+    username: username || "",
     index: b(index),
     pool: bt(m.pool),
     prob: b(m.prob),
     infoMultihash: m.infoMultihash,
     numberOfBets: new BN(m.numberOfBets),
     closesAt: new Date(m.closesAt * 1000),
-    title: marketInfo.title,
-    description: marketInfo.description,
+    title: marketInfo?.title || "No description",
+    description: marketInfo?.description || "",
     poolsize: bt(0), // Filled in after
     bets: [], // Filled in after
     blockNumber: 0, // Filled in after
