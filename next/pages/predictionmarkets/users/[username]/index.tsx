@@ -22,6 +22,7 @@ import useWeb3Action from "sitewide/hooks/useWeb3Action";
 
 const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>();
+  const [invalidUser, setInvalidUser] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>();
   const funds = userInfo?.balance || BNToken.fromNumTokens("0");
   const r = useRouter();
@@ -40,8 +41,13 @@ const Index: NextPage<Web3Props> = ({ web3Ref, firstAccount }: Web3Props) => {
       username={userInfo?.username || "Unregistered Visitor"}
       funds={funds}
     >
-      {userProfile ? JSON.stringify(userProfile) : <p>No user with this name exists</p>}
-    </PredictionMarketsLayout>
+      {invalidUser &&  <p>No user with this name exists</p>}
+      {userProfile && <>
+      <h1>User: {userName}</h1>
+      <h2>Bio:</h2>
+      <p>{userProfile.bio || 'This user has decided to be mysterious'}</p>
+      </>}
+   </PredictionMarketsLayout>
   );
 
   // const windowDimensions = useWindowDimensions();

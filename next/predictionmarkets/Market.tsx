@@ -75,7 +75,8 @@ export default ({
           <Card.Header>{header}</Card.Header>
           <div style={{ marginTop: "1em" }}>
             <Card.Meta>
-              <span className="date">By {market.username}</span>
+              <span className="date">By <a href={"/predictionmarkets/users/" + market.username}>
+                {market.username}</a></span>
             </Card.Meta>
             <Card.Description>{market.description}</Card.Description>
           </div>

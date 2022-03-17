@@ -16,6 +16,7 @@ export default ({ funds, username, children }: Props) => {
   );
 
   const homeLinkSegment = <a href="/predictionmarkets">View Markets</a>;
+  const userLink = <a href={"/predictionmarkets/users/" + username}>Your Profile</a>;
 
-  return <Layout additionalSegments={[fundsSegment, homeLinkSegment]}>{children}</Layout>;
+  return <Layout additionalSegments={[fundsSegment, homeLinkSegment, userLink]}>{children}</Layout>;
 };

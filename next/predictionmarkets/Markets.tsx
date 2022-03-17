@@ -37,7 +37,8 @@ const Markets = ({ markets }: IMarketsProps) => {
               </Card.Header>
               <div>
                 <Card.Meta>
-                  <span className="date">By {market.username}</span>
+                  <span className="date">By <a href={"/predictionmarkets/users/" + market.username}>
+                    {market.username}</a></span>
                 </Card.Meta>
                 <Card.Description>
                   {TruncateAndEllipse(market.description || "", 100)}
