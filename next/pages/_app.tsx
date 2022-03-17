@@ -57,7 +57,7 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
         setInterval(async function () {
           const accounts = await web3.eth.getAccounts();
           if (accounts[0] !== firstAccount) {
-            setFirstAccount(accounts[0]);
+            web3init(false);
           }
         }, 100);
       }
@@ -68,7 +68,7 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
       web3Ref.current = web3;
       setFirstAccount(accounts[0]);
     } else {
-      setNotConnectedReason(NotConnectedReason.NoProvider);
+      setNotConnectedReason(NotConnectedReason.NotConnected);
       web3Ref.current = undefined;
       setFirstAccount("");
     }

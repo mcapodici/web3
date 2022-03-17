@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Icon, Input, Modal, TextArea } from "semantic-ui-react";
 import { Web3Props } from "sitewide/RequireWeb3Wrapper";
-import ShortAddressWithLink from "sitewide/ShortAddressWithLink";
 import * as Contract from "ethereum/contracts/PredictionMarket";
-import Web3 from "web3";
 import { Alert, AlertPanel, AlertType } from "sitewide/alerts/AlertPanel";
 
 export interface RegisterModalProps extends Web3Props {
@@ -57,6 +55,8 @@ const RegisterModal = ({
             header: "Error occurred during registration",
             type: AlertType.Negative,
             uniqueId: "predictionmarket.registermodal.error",
+            dismissable: true,
+            loading: false
           },
         ];
 

@@ -1,7 +1,10 @@
 enum NotConnectedReason {
   NotChecked,
   NoProvider,
-  NotConnected,
+
+  /* Provider installed but account not connected because either acount not authorized
+  or password needs to be entered or something like that */
+  NotConnected, 
   WrongNetwork,
 }
 

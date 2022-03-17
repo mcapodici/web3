@@ -53,6 +53,8 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         header: "Account Created",
         type: AlertType.Positive,
         uniqueId: accountAddress,
+        dismissable: true,
+        loading: false
       });
     } catch (ex: any) {
       addAlert({
@@ -60,6 +62,8 @@ const BankAccountApp = ({ web3Ref, firstAccount }: Web3Props) => {
         header: "Error occurred during account creation",
         type: AlertType.Negative,
         uniqueId: 'createBankAccount.error',
+        dismissable: true,
+        loading: false
       });
     }
     setCreatingBankAccount(false);

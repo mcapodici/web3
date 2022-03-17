@@ -6,6 +6,10 @@ You can see this live here: https://web3-mcapodici.vercel.app._
 
 ## Notes
 
+### Node version
+
+As this is deployed on Vercel, I use Node v14 locally for compatiability with that.
+
 ### Initial creation of project
 
 The project was created using [next.js](https://nextjs.org/docs/getting-started), initiated with the command: `npx create-next-app@latest --typescript`
