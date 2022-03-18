@@ -22,7 +22,8 @@ const Home: NextPage = () => {
         <li>
           <Link href="/predictionmarkets">Prediction Markets</Link> - Prediction
           Markerts is a game where you create markets about future outcomes, and
-          people bet on whether the outcome will happen or not happen.
+          people bet on whether the outcome will happen or not happen. Inspired by
+          <a href="https://manifold.markets">Manifold Markets</a>.
         </li>
       </ul>
     </Layout>
