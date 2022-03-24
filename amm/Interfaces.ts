@@ -63,21 +63,21 @@ export function createMarketCommonValidation<TNum>(
 }
 
 /** Interface for interacting with a market */
-export interface PredictionMarketInstance<TNum> {
+export interface PredictionMarket<TNum> {
   /** Place a bet. Returns a unique bet identifier */
-  bet: (player: string, outcome: string, amount: TNum) => string;
+  bet: (player: string, outcomeIndex: number, amount: TNum) => number;
 
   /** Sell a bet you have made, returns the amount returned (as a positive) for the sale */
-  sellBet: (betId: string) => TNum;
+  sellBet: (betId: number) => TNum;
 
   /** Returns the bet value if you win and if you sold the given bet */
-  betValue: (betId: string) => { onSale: TNum; onWin: TNum };
+  betValue: (betId: number) => { onSale: TNum; onWin: TNum };
 
   /** Returns the probabilities of the outcomes */
   probs: () => { outcome: string; prob: TNum }[];
 
   /** Resolves the prediction market and returns the winnings each player who won got */
-  resolve: (outcomes: string[]) => { player: string; winnings: TNum }[];
+  resolve: (outcomeIndices: number[]) => { player: string; winnings: TNum }[];
 }
 
 /** Interface for a prediction market factory for a specific AMM algorithm */
@@ -93,6 +93,6 @@ export interface PredictionMarketFactory<TNum> {
     context: NumericContext<TNum>,
     outcomes: string[],
     probabilities: TNum[],
-    liquidity: number
-  ): PredictionMarketInstance<TNum>;
+    liquidity: TNum
+  ): PredictionMarket<TNum>;
 }
