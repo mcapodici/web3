@@ -18,6 +18,7 @@ export interface NumericContext<TNum> {
   exp(n: TNum): TNum;
   ln(n: TNum): TNum;
   equals(a: TNum, b: TNum): boolean;
+  lt(a: TNum, b: TNum): boolean;
 }
 
 export const numberContext: NumericContext<number> = {
@@ -30,6 +31,7 @@ export const numberContext: NumericContext<number> = {
   exp: (n) => Math.exp(n),
   ln: (n) => Math.log(n),
   equals: (a, b) => a === b,
+  lt: (a, b) => a < b,
 };
 
 export const sum = <TNum>(context: NumericContext<TNum>, values: TNum[]) =>
@@ -39,20 +41,23 @@ export function createMarketCommonValidation<TNum>(
   context: NumericContext<TNum>,
   outcomes: string[],
   probabilities: TNum[],
-  liquidity: number
+  liquidity: TNum
 ) {
   if (!outcomes) return "outcomes is required";
-  if (!probabilities) return "probabilities is required";
-  if (!liquidity) return "liquidity is required";
-
   if (outcomes.length < 2) return "at least 2 outcomes are required";
+  if (new Set(outcomes).size < outcomes.length)
+    return "outcomes must be unique";
+
+  if (!probabilities) return "probabilities is required";
   if (outcomes.length != probabilities.length)
     return "outcome and probability vectors need to be the same length";
-  if (new Set(outcomes).size < outcomes.length)
-    return "outcomes must be unqieu";
-  if (liquidity < 0) return "liquidity must be positive";
+  if (probabilities.find((p) => context.lt(p, context.zero)))
+    return "probabilities must all be non-negative";
   if (!context.equals(sum<TNum>(context, probabilities), context.one))
     return "probabilities must add to 1";
+
+  if (!liquidity) return "liquidity is required";
+  if (context.lt(liquidity, context.zero)) return "liquidity must be positive";
 
   return undefined;
 }
