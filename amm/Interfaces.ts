@@ -67,21 +67,28 @@ export interface PredictionMarket<TNum> {
   /** Place a bet. Returns a unique bet identifier */
   bet: (player: string, outcomeIndex: number, amount: TNum) => number;
 
+  /** Add an outcome for free response markets. Returns the index of that new outcome */
+  addOutcome: (outcome: string) => number;
+
+  canAddOutcome: boolean;
+
   /** Sell a bet you have made, returns the amount returned (as a positive) for the sale */
   sellBet: (betId: number) => TNum;
+
+  canSellBet: boolean;
 
   /** Returns the bet value if you win and if you sold the given bet */
   betValue: (betId: number) => { onSale: TNum; onWin: TNum };
 
   /** Returns the probabilities of the outcomes */
-  probs: () => { outcome: string; prob: TNum }[];
+  probs: () => TNum[];
 
   /** Resolves the prediction market and returns the winnings each player who won got */
-  resolve: (outcomeIndices: number[]) => { player: string; winnings: TNum }[];
+  resolve: (outcomeIndices: number[]) => { [player: string]: TNum };
 }
 
 /** Interface for a prediction market factory for a specific AMM algorithm */
-export interface PredictionMarketFactory<TNum> {
+export interface PredictionMarketFactory {
   /**
    * Create a market
    *
@@ -89,7 +96,7 @@ export interface PredictionMarketFactory<TNum> {
    * @param probabilities Initial probabilities of each outcome. Needs to sum to 1.
    * @param liquidity
    */
-  create(
+  create<TNum>(
     context: NumericContext<TNum>,
     outcomes: string[],
     probabilities: TNum[],

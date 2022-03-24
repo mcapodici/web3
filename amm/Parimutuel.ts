@@ -87,10 +87,11 @@ class Market<TNum> implements PredictionMarket<TNum> {
   }
 
   private totalPoolsSize() {
-    return sum(
-      this.context,
-      this.pools.map((_, i) => this.poolSizeWithBets(i))
-    );
+    return sum(this.context, this.poolSizeWithBetsAll());
+  }
+
+  private poolSizeWithBetsAll() {
+    return this.pools.map((_, i) => this.poolSizeWithBets(i));
   }
 
   private poolSizeWithBets(index: number) {
@@ -102,17 +103,39 @@ class Market<TNum> implements PredictionMarket<TNum> {
   }
 
   probs() {
-    return []; // TODO  { outcome: string; prob: TNum }[];
+    const tps = this.totalPoolsSize();
+    return this.poolSizeWithBetsAll().map((p) => this.context.divide(p, tps));
   }
 
   resolve(outcomeIndices: number[]) {
-    return []; // TODO  (outcomes: string[]) => { player: string; winnings: TNum }[];
+    if (outcomeIndices.length !== 1)
+      throw new Error("Only supports single outcome");
+
+    const result: { [player: string]: TNum } = {};
+
+    const winningBets = this.bets
+      .map((b, betId) => ({ ...b, index: betId }))
+      .filter((b) => b.outcomeIndex === outcomeIndices[0]);
+    for (let bet of winningBets) {
+      result[bet.player] = result[bet.player] || this.context.zero;
+      result[bet.player] = this.context.add(
+        result[bet.player],
+        this.betValue(bet.index).onWin
+      );
+    }
+
+    return result;
   }
+
+  addOutcome(outcome: string) {
+    throw new Error("addOutcome not supported for parimutuel");
+    return 0; // Because typescript
+  }
+
+  canSellBet = false;
+  canAddOutcome = false;
 }
 
-export const parimutuel = <TNum>() => {
-  return {
-    create: createMarket,
-  } as PredictionMarketFactory<TNum>;
-};
-
+export const parimutuel = {
+  create: createMarket,
+} as PredictionMarketFactory;
