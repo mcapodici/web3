@@ -48,14 +48,35 @@ export function createMarketCommonValidation<TNum>(
   if (outcomes.length < 2) return "at least 2 outcomes are required";
   if (outcomes.length != probabilities.length)
     return "outcome and probability vectors need to be the same length";
+  if (new Set(outcomes).size < outcomes.length)
+    return "outcomes must be unqieu";
   if (liquidity < 0) return "liquidity must be positive";
   if (!context.equals(sum<TNum>(context, probabilities), context.one))
     return "probabilities must add to 1";
+
+  return undefined;
 }
 
-export interface PredictionMarketInstance {}
+/** Interface for interacting with a market */
+export interface PredictionMarketInstance<TNum> {
+  /** Place a bet. Returns a unique bet identifier */
+  bet: (player: string, outcome: string, amount: TNum) => string;
 
-export interface PredictionMarket<TNum> {
+  /** Sell a bet you have made, returns the amount returned (as a positive) for the sale */
+  sellBet: (betId: string) => TNum;
+
+  /** Returns the bet value if you win and if you sold the given bet */
+  betValue: (betId: string) => { onSale: TNum; onWin: TNum };
+
+  /** Returns the probabilities of the outcomes */
+  probs: () => { outcome: string; prob: TNum }[];
+
+  /** Resolves the prediction market and returns the winnings each player who won got */
+  resolve: (outcomes: string[]) => { player: string; winnings: TNum }[];
+}
+
+/** Interface for a prediction market factory for a specific AMM algorithm */
+export interface PredictionMarketFactory<TNum> {
   /**
    * Create a market
    *
@@ -68,5 +89,5 @@ export interface PredictionMarket<TNum> {
     outcomes: string[],
     probabilities: TNum[],
     liquidity: number
-  ): PredictionMarketInstance;
+  ): PredictionMarketInstance<TNum>;
 }
