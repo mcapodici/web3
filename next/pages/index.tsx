@@ -8,11 +8,7 @@ const Home: NextPage = () => {
     <Layout>
       <Segment
         placeholder
-        style={{
-          backgroundImage: "url('/waves-1817646.jpg')",
-          backgroundSize: "cover",
-          
-        }}
+        className="maincover"
       >
         <Header size="huge" textAlign="center">
           <h1 style={{ fontSize: "4rem" }}>Web3 Examples!</h1>
