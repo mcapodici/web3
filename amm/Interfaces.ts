@@ -62,10 +62,19 @@ export function createMarketCommonValidation<TNum>(
   return undefined;
 }
 
+export interface Bet<TNum> {
+  player: string;
+  amount: TNum;
+  outcomeIndex: number;
+}
+
 /** Interface for interacting with a market */
 export interface PredictionMarket<TNum> {
   /** Place a bet. Returns a unique bet identifier */
-  bet: (player: string, outcomeIndex: number, amount: TNum) => number;
+  bet: (bet: Bet<TNum>) => number;
+
+  /** Return all bets placed */
+  getBets: () => Bet<TNum>[];
 
   /** Add an outcome for free response markets. Returns the index of that new outcome */
   addOutcome: (outcome: string) => number;
@@ -85,6 +94,11 @@ export interface PredictionMarket<TNum> {
 
   /** Resolves the prediction market and returns the winnings each player who won got */
   resolve: (outcomeIndices: number[]) => { [player: string]: TNum };
+
+  /** A bunch of human-readable numbers about the market. No need to return probabilities here as
+   * they are availible in the prob() function. Stuff that is market-specific and interesting.
+   */
+  stats: () => { name: string; value: TNum }[];
 }
 
 /** Interface for a prediction market factory for a specific AMM algorithm */

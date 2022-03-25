@@ -27,7 +27,7 @@ describe("parimutuel", () => {
       100
     );
 
-    const bet = pool.bet("foo", 0, 50);
+    const bet = pool.bet({ player: "foo", outcomeIndex: 0, amount: 50 });
 
     expect(pool.probs()[0]).to.be.approximately(0.66, 0.01);
     expect(pool.probs()[1]).to.be.approximately(0.27, 0.01);
@@ -44,8 +44,8 @@ describe("parimutuel", () => {
       100
     );
 
-    const bet = pool.bet("foo", 0, 50);
-    const bet2 = pool.bet("bar", 1, 100);
+    const bet = pool.bet({ player: "foo", outcomeIndex: 0, amount: 50 });
+    const bet2 = pool.bet({ player: "bar", outcomeIndex: 1, amount: 100 });
 
     expect(pool.probs()[0]).to.be.eq(0.4);
     expect(pool.probs()[1]).to.be.eq(0.56);
@@ -64,12 +64,31 @@ describe("parimutuel", () => {
       100
     );
 
-    pool.bet("foo", 0, 50);
-    pool.bet("bar", 1, 100);
+    pool.bet({ player: "foo", outcomeIndex: 0, amount: 50 });
+    pool.bet({ player: "bar", outcomeIndex: 1, amount: 100 });
+
+    expect(pool.stats()).deep.eq([
+      {
+        name: "Pool Size - 1",
+        value: 100,
+      },
+      {
+        name: "Pool Size - 2",
+        value: 140,
+      },
+      {
+        name: "Pool Size - 3",
+        value: 10,
+      },
+      {
+        name: "Total Pool",
+        value: 250,
+      },
+    ]);
 
     const result = pool.resolve([0]);
 
     expect(Object.keys(result).length).to.be.eq(1);
-    expect(result['foo']).to.be.eq(125);
+    expect(result["foo"]).to.be.eq(125);
   });
 });

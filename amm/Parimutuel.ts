@@ -1,4 +1,5 @@
 import {
+  Bet,
   createMarketCommonValidation,
   NumericContext,
   PredictionMarket,
@@ -26,7 +27,7 @@ class Market<TNum> implements PredictionMarket<TNum> {
   private context: NumericContext<TNum>;
   private outcomes: string[];
   private pools: TNum[];
-  private bets: { player: string; amount: TNum; outcomeIndex: number }[];
+  private bets: Bet<TNum>[];
 
   constructor(
     context: NumericContext<TNum>,
@@ -63,9 +64,13 @@ class Market<TNum> implements PredictionMarket<TNum> {
     this.bets = [];
   }
 
-  bet(player: string, outcomeIndex: number, amount: TNum) {
-    this.bets.push({ amount, outcomeIndex, player });
+  bet(bet: Bet<TNum>) {
+    this.bets.push(bet);
     return this.bets.length - 1; // Can't sell bets anyway;
+  }
+
+  getBets() {
+    return this.bets;
   }
 
   sellBet(betId: number) {
@@ -134,6 +139,12 @@ class Market<TNum> implements PredictionMarket<TNum> {
 
   canSellBet = false;
   canAddOutcome = false;
+  
+  stats() {
+    const stats = this.poolSizeWithBetsAll().map((size, index) => ({name: `Pool Size - ${this.outcomes[index]}`, value:size}));
+    stats.push({name:'Total Pool', value:this.totalPoolsSize()});
+    return stats;
+  }
 }
 
 export const parimutuel = {
