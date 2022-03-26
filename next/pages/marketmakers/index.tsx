@@ -33,7 +33,7 @@ const Page = () => {
         the initial money so that when the first person comes and makes their
         bet, there is someone there with money to take the other side of the
         bet. In addition this allows the market maker to handle lots of bets on
-        the same thing, even if no one is better on another outcome to balance
+        the same outcome, even if no one is betting on a different outcome to balance
         it out.`}
       </p>
       <p>
