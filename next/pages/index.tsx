@@ -45,7 +45,7 @@ const Home: NextPage = () => {
         <li>
           <em>Coming soon!</em> - Pools &amp; Market Makers - experiment with
           different types of automated markets, like Uniswap, and get an
-          intuition for them.
+          intuition for them. Work in progress: <a href="http://localhost:3000/marketmakers">here</a>.
         </li>
       </ul>
     </Layout>
