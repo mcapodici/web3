@@ -7,3 +7,8 @@
   background-image: url("/waves-1817646.jpg") !important;
   background-size: cover !important;
 }
+
+thead th,
+tfoot th {
+  background-color: azure !important;  
+}

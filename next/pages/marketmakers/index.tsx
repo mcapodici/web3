@@ -127,7 +127,8 @@ const Page = () => {
       <h3>Step 2: Set up the initial probabilities and liquidity</h3>
       <Form>
         <Form.Group>
-          <Form.Field width={10}
+          <Form.Field
+            width={10}
             label="Outcome Name"
             error={
               newOutcomeNameInvalidReason && showOutcomeErrors
@@ -166,29 +167,28 @@ const Page = () => {
           </Form.Field>
           <Form.Field width={3}>
             <label>&nbsp;</label>
-        <Button
-       fluid
-          primary
-          onClick={() => {
-            if (!newOutcomeFormHasErrors) {
-              addOutcome();
-              setNewOutcomeName("");
-              setNewOutcomeProbabilityPercent("");
-              setShowOutcomeErrors(false);
-            } else {
-              setShowOutcomeErrors(true);
-            }
-          }}
-        >
-          Add outcome
-        </Button>
+            <Button
+              fluid
+              primary
+              onClick={() => {
+                if (!newOutcomeFormHasErrors) {
+                  addOutcome();
+                  setNewOutcomeName("");
+                  setNewOutcomeProbabilityPercent("");
+                  setShowOutcomeErrors(false);
+                } else {
+                  setShowOutcomeErrors(true);
+                }
+              }}
+            >
+              Add outcome
+            </Button>
           </Form.Field>
         </Form.Group>
-       
       </Form>
       <h3>Outcomes</h3>
       {outcomes.length ? (
-        <Table>
+        <Table unstackable>
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell>Outcome</Table.HeaderCell>
@@ -205,11 +205,11 @@ const Page = () => {
           </Table.Body>
           <Table.Footer>
             <Table.Row>
-              <Table.Cell></Table.Cell>
-              <Table.Cell>
+              <Table.HeaderCell width={10}></Table.HeaderCell>
+              <Table.HeaderCell>
                 Total:{" "}
                 {(100 * sum(outcomes.map((x) => x.probability))).toString()}
-              </Table.Cell>
+              </Table.HeaderCell>
             </Table.Row>
           </Table.Footer>
         </Table>
