@@ -63,14 +63,14 @@ const Bar = ({ additionalSegments }: BarProps) => {
         columns={(1 + (additionalSegments?.length || 0)) as any}
         stackable
         textAlign="center"
-      >{notConnectedReasonText}
+      >
         <Grid.Row verticalAlign="middle">
           {segments?.map((s, i) => (
             <Grid.Column key={i}>{s}</Grid.Column>
           ))}
         </Grid.Row>
       </Grid>
-    </Segment> : <>{notConnectedReasonText}</>
+    </Segment> : <></>
   );
 };
 
