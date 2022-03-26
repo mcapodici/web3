@@ -10,7 +10,7 @@ interface Props {
 export default ({ notConnectedReason }: Props) => {
   function headerMessage() {
     switch (notConnectedReason) {
-      case NotConnectedReason.NotChecked:
+      case NotConnectedReason.StillChecking:
         return "Checking Provider...";
       case NotConnectedReason.NoProvider:
         return "Ethereum Plugin Required";
@@ -23,7 +23,7 @@ export default ({ notConnectedReason }: Props) => {
 
   function body() {
     switch (notConnectedReason) {
-      case NotConnectedReason.NotChecked:
+      case NotConnectedReason.StillChecking:
         return <p>Please wait while we check your Ethereum provider.</p>;
       case NotConnectedReason.NoProvider:
         return (

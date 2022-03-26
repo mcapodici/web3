@@ -16,11 +16,11 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
   const subscriptionsRef = useRef<any[]>([]);
   const [firstAccount, setFirstAccount] = useState("");
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [notConnectedReason, setNotConnectedReason] = useState<
-    NotConnectedReason | undefined
-  >(NotConnectedReason.NotChecked);
+  const [notConnectedReason, setNotConnectedReason] =
+    useState<NotConnectedReason>(NotConnectedReason.DontCare);
 
   async function web3init(withListeners: boolean) {
+    setNotConnectedReason(NotConnectedReason.StillChecking);
     const { web3, accounts } = await getWeb3WithAccounts();
 
     if (!web3) {
@@ -64,29 +64,32 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
     }
 
     if (accounts.length) {
-      setNotConnectedReason(undefined);
       web3Ref.current = web3;
       setFirstAccount(accounts[0]);
+      setNotConnectedReason(NotConnectedReason.None);
     } else {
-      setNotConnectedReason(NotConnectedReason.NotConnected);
       web3Ref.current = undefined;
       setFirstAccount("");
+      setNotConnectedReason(NotConnectedReason.NotConnected);
     }
   }
 
-  const web3Status: Web3Status = firstAccount
-    ? {
-        type: "enabled",
-        web3Ref: web3Ref as MutableRefObject<Web3>,
-        firstAccount,
-      }
-    : {
-        type: "disabled",
-        notConnectedReason: notConnectedReason || NotConnectedReason.NotChecked,
-      };
+  const web3Status: Web3Status =
+    notConnectedReason === NotConnectedReason.None
+      ? {
+          type: "enabled",
+          web3Ref: web3Ref as MutableRefObject<Web3>,
+          firstAccount,
+        }
+      : {
+          type: "disabled",
+          notConnectedReason: notConnectedReason,
+        };
 
   const providerValue = {
-    web3Init: () => { web3init(true)},
+    web3Init: () => {
+      web3init(true);
+    },
     web3Status,
     alerts,
     addAlert: (alert: Alert) => {
