@@ -21,6 +21,7 @@ export interface IContext {
   alerts: Alert[];
   addAlert: (alert: Alert) => void;
   dismissAlert: (uniqueId: string) => void;
+  web3Init: () => void;
 }
 
 const Context = createContext<IContext>(<IContext>(<any>undefined)); // Hack because I will never use the default anywhere

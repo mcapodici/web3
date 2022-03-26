@@ -1,4 +1,9 @@
-import React, { ComponentType, MutableRefObject, useContext } from "react";
+import React, {
+  ComponentType,
+  MutableRefObject,
+  useContext,
+  useEffect,
+} from "react";
 import Web3 from "web3";
 import { Context } from "./Context";
 import EthereumPluginRequiredWarning from "./EthereumPluginRequiredWarning";
@@ -14,7 +19,12 @@ const RequireWeb3Wrapper = (
   IfNoWeb3: ComponentType<{}>
 ) => {
   const Component = () => {
-    const { web3Status } = useContext(Context);
+    const { web3Status, web3Init } = useContext(Context);
+
+    useEffect(() => {
+      web3Init();
+    }, []);
+
     switch (web3Status.type) {
       case "disabled":
         return (

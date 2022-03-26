@@ -74,10 +74,6 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
     }
   }
 
-  useEffect(() => {
-    web3init(true);
-  });
-
   const web3Status: Web3Status = firstAccount
     ? {
         type: "enabled",
@@ -90,6 +86,7 @@ function MyApp({ Component, pageProps }: AppProps<MyAppProps>) {
       };
 
   const providerValue = {
+    web3Init: () => { web3init(true)},
     web3Status,
     alerts,
     addAlert: (alert: Alert) => {
