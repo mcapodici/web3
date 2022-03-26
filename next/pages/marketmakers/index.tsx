@@ -35,14 +35,15 @@ const Page = () => {
   const newOutcomeProbabilityPercentAsNumber = Number(
     newOutcomeProbabilityPercent
   );
-  const newOutcomeProbabilityPercentNumberInvalidReason = !Number.isFinite(
-    newOutcomeProbabilityPercentAsNumber
-  )
-    ? "Probability is not a valid number"
-    : newOutcomeProbabilityPercentAsNumber < 0 ||
-      newOutcomeProbabilityPercentAsNumber > 100
-    ? "Probability must be between 0 and 100 inclusive"
-    : undefined;
+  const newOutcomeProbabilityPercentNumberInvalidReason =
+    newOutcomeProbabilityPercent === ""
+      ? "Probability is required"
+      : !Number.isFinite(newOutcomeProbabilityPercentAsNumber)
+      ? "Probability is not a valid number"
+      : newOutcomeProbabilityPercentAsNumber < 0 ||
+        newOutcomeProbabilityPercentAsNumber > 100
+      ? "Probability must be between 0 and 100 inclusive"
+      : undefined;
 
   const newOutcomeNameInvalidReason = !newOutcomeName
     ? "Outcome name is required"
@@ -55,7 +56,7 @@ const Page = () => {
     !!newOutcomeProbabilityPercentNumberInvalidReason;
 
   const addOutcome = () => {
-    if (!newOutcomeFormHasErrors) return;
+    if (newOutcomeFormHasErrors) return;
     setOutcomes((os) => [
       ...os,
       {
@@ -121,10 +122,10 @@ const Page = () => {
         </Grid.Row>
       </Grid>
       <h3>Step 2: Set up the initial probabilities and liquidity</h3>
-      <Form >
+      <Form>
         <Form.Group widths="equal">
           <Form.Field
-          label="Outcome Name"
+            label="Outcome Name"
             error={
               newOutcomeNameInvalidReason && showOutcomeErrors
                 ? { content: newOutcomeNameInvalidReason, pointing: "above" }
@@ -135,25 +136,28 @@ const Page = () => {
             value={newOutcomeName}
             onChange={(_: any, data: InputOnChangeData) => {
               setNewOutcomeName(data.value);
+              setShowOutcomeErrors(false);
             }}
             control={Input}
-          >
-           
-          </Form.Field>
-          <Form.Field error={
-              newOutcomeNameInvalidReason && showOutcomeErrors
-                ? { content: newOutcomeNameInvalidReason, pointing: "above" }
-                : undefined
-            }>
-            <label>Probability</label>
-            <Input
+          ></Form.Field>
+          <Form.Field>
+            <label>Probability (%)</label>
+            <Form.Input
+              error={
+                newOutcomeProbabilityPercentNumberInvalidReason &&
+                showOutcomeErrors
+                  ? {
+                      content: newOutcomeProbabilityPercentNumberInvalidReason,
+                      pointing: "above",
+                    }
+                  : undefined
+              }
               maxLength={10}
-              labelPosition="right"
-              label="%"
               placeholder="e.g. 20"
               value={newOutcomeProbabilityPercent}
               onChange={(event, data) => {
                 setNewOutcomeProbabilityPercent(data.value);
+                setShowOutcomeErrors(false);
               }}
             />
           </Form.Field>
@@ -161,8 +165,14 @@ const Page = () => {
         <Button
           primary
           onClick={() => {
-            setShowOutcomeErrors(true);
-            if (!newOutcomeFormHasErrors) addOutcome();
+            if (!newOutcomeFormHasErrors) { 
+              addOutcome();
+              setNewOutcomeName('');
+              setNewOutcomeProbabilityPercent('');
+              setShowOutcomeErrors(false);
+            } else {
+              setShowOutcomeErrors(true);
+            }
           }}
         >
           Add outcome
