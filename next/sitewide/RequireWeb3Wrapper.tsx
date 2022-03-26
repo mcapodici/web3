@@ -9,14 +9,19 @@ export interface Web3Props {
   firstAccount: string;
 }
 
-const RequireWeb3Wrapper =
-  (IfWeb3: ComponentType<Web3Props>, IfNoWeb3: ComponentType<{}>) => () => {
+const RequireWeb3Wrapper = (
+  IfWeb3: ComponentType<Web3Props>,
+  IfNoWeb3: ComponentType<{}>
+) => {
+  const Component = () => {
     const { web3Status } = useContext(Context);
     switch (web3Status.type) {
       case "disabled":
         return (
           <Layout>
-            <EthereumPluginRequiredWarning notConnectedReason={web3Status.notConnectedReason} />
+            <EthereumPluginRequiredWarning
+              notConnectedReason={web3Status.notConnectedReason}
+            />
             <IfNoWeb3 />
           </Layout>
         );
@@ -30,5 +35,7 @@ const RequireWeb3Wrapper =
         );
     }
   };
+  return Component;
+};
 
 export { RequireWeb3Wrapper };
