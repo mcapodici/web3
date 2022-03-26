@@ -7,8 +7,11 @@ import {
   Grid,
   Input,
   InputOnChangeData,
+  Table,
 } from "semantic-ui-react";
 import Layout from "sitewide/Layout";
+import { sum } from "util/Array";
+import { TruncateAndEllipse } from "util/String";
 
 interface Outcome {
   name: string;
@@ -123,8 +126,8 @@ const Page = () => {
       </Grid>
       <h3>Step 2: Set up the initial probabilities and liquidity</h3>
       <Form>
-        <Form.Group widths="equal">
-          <Form.Field
+        <Form.Group>
+          <Form.Field width={10}
             label="Outcome Name"
             error={
               newOutcomeNameInvalidReason && showOutcomeErrors
@@ -140,7 +143,7 @@ const Page = () => {
             }}
             control={Input}
           ></Form.Field>
-          <Form.Field>
+          <Form.Field width={3}>
             <label>Probability (%)</label>
             <Form.Input
               error={
@@ -161,14 +164,16 @@ const Page = () => {
               }}
             />
           </Form.Field>
-        </Form.Group>
+          <Form.Field width={3}>
+            <label>&nbsp;</label>
         <Button
+       fluid
           primary
           onClick={() => {
-            if (!newOutcomeFormHasErrors) { 
+            if (!newOutcomeFormHasErrors) {
               addOutcome();
-              setNewOutcomeName('');
-              setNewOutcomeProbabilityPercent('');
+              setNewOutcomeName("");
+              setNewOutcomeProbabilityPercent("");
               setShowOutcomeErrors(false);
             } else {
               setShowOutcomeErrors(true);
@@ -177,8 +182,40 @@ const Page = () => {
         >
           Add outcome
         </Button>
+          </Form.Field>
+        </Form.Group>
+       
       </Form>
-      {JSON.stringify(outcomes)}
+      <h3>Outcomes</h3>
+      {outcomes.length ? (
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Outcome</Table.HeaderCell>
+              <Table.HeaderCell>Probability (%)</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {outcomes.map((o) => (
+              <Table.Row key={o.name}>
+                <Table.Cell>{o.name}</Table.Cell>
+                <Table.Cell>{(100 * o.probability).toString()}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+          <Table.Footer>
+            <Table.Row>
+              <Table.Cell></Table.Cell>
+              <Table.Cell>
+                Total:{" "}
+                {(100 * sum(outcomes.map((x) => x.probability))).toString()}
+              </Table.Cell>
+            </Table.Row>
+          </Table.Footer>
+        </Table>
+      ) : (
+        <p>No outcomes have been added yet.</p>
+      )}
     </Layout>
   );
 };
