@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Divider, Dropdown, Grid, Opt } from "semantic-ui-react";
+import { Button, Divider, Dropdown, Grid } from "semantic-ui-react";
 import Layout from "sitewide/Layout";
 
 const Page = () => {
@@ -44,7 +44,7 @@ const Page = () => {
       <Divider />
       <h2>Simulator</h2>
       <h3>Step 1: Choose system and create market</h3>
-      <Grid>
+      <Grid stackable>
         <Grid.Row>
           <Grid.Column width={4}>
             <Dropdown
