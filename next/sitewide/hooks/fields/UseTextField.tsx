@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Form } from "semantic-ui-react";
 
-export function useNumericField(
+export function useTextField(
   fieldNameForDisplay: string,
   isRequired: boolean,
-  validation: (n: number) => string | undefined,
+  validation: (n: string) => string | undefined,
   initialText: string,
   maxLength: number,
   placeHolder: string
@@ -12,16 +12,12 @@ export function useNumericField(
   const [fieldText, setFieldText] = useState(initialText);
   const [showErrorOnField, setShowErrorOnField] = useState(false);
 
-  const asNumber = Number(fieldText);
-
   const fieldInvalidReason =
     fieldText === ""
       ? isRequired
         ? `${fieldNameForDisplay} is required`
         : undefined
-      : !Number.isFinite(asNumber)
-      ? `${fieldNameForDisplay} is not a valid number`
-      : validation(asNumber);
+      :  validation(fieldText);
 
   const node = (
     <Form.Input
@@ -36,7 +32,7 @@ export function useNumericField(
       maxLength={maxLength}
       placeholder={placeHolder}
       value={fieldText}
-      onChange={(event, data) => {
+      onChange={(_, data) => {
         setFieldText(data.value);
         setShowErrorOnField(true);
       }}
@@ -46,7 +42,7 @@ export function useNumericField(
   const isValid = !fieldInvalidReason;
   return {
     node,
-    value: isValid ? asNumber : undefined,
+    value: fieldText ? fieldText : undefined,
     isValid,
     reset: () => {
       setFieldText(initialText);

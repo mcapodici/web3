@@ -10,6 +10,7 @@ import {
   Table,
 } from "semantic-ui-react";
 import { useNumericField } from "sitewide/hooks/fields/UseNumericField";
+import { useTextField } from "sitewide/hooks/fields/UseTextField";
 import Layout from "sitewide/Layout";
 import { sum } from "util/Array";
 import { TruncateAndEllipse } from "util/String";
@@ -30,9 +31,19 @@ const Page = () => {
   ];
 
   const [marketMakerSystem, setMarketMakerSystem] = useState("parimutuel");
-  const [newOutcomeName, setNewOutcomeName] = useState("");
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
-  const [showOutcomeErrors, setShowOutcomeErrors] = useState(false);
+
+  const newOutcomeTextField = useTextField(
+    "Outcome Name",
+    true,
+    (text) =>
+      outcomes.find((x) => x.name === text)
+        ? "Outcome name has been used already"
+        : undefined,
+    "",
+    50,
+    "e.g. Team A to win"
+  );
 
   const newOutcomeProbabilityField = useNumericField(
     "Probability",
@@ -55,22 +66,14 @@ const Page = () => {
     "Liquidity"
   );
 
-  const newOutcomeNameInvalidReason = !newOutcomeName
-    ? "Outcome name is required"
-    : outcomes.find((x) => x.name === newOutcomeName)
-    ? "Outcome name has been used already"
-    : undefined;
-
-  const newOutcomeFormHasErrors =
-    !!newOutcomeNameInvalidReason || !newOutcomeProbabilityField.isValid;
-
   const addOutcome = () => {
-    const prob = newOutcomeProbabilityField.asNumber;
-    if (prob === undefined || newOutcomeName === undefined) return;
+    const prob = newOutcomeProbabilityField.value;
+    const name = newOutcomeTextField.value;
+    if (prob === undefined || name === undefined) return;
     setOutcomes((os) => [
       ...os,
       {
-        name: newOutcomeName,
+        name,
         probability: prob / 100,
       },
     ]);
@@ -134,23 +137,10 @@ const Page = () => {
       <h3>Step 2: Set up the initial probabilities and liquidity</h3>
       <Form>
         <Form.Group>
-          <Form.Field
-            width={10}
-            label="Outcome Name"
-            error={
-              newOutcomeNameInvalidReason && showOutcomeErrors
-                ? { content: newOutcomeNameInvalidReason, pointing: "above" }
-                : undefined
-            }
-            maxLength={50}
-            placeholder="Outcome Name"
-            value={newOutcomeName}
-            onChange={(_: any, data: InputOnChangeData) => {
-              setNewOutcomeName(data.value);
-              setShowOutcomeErrors(false);
-            }}
-            control={Input}
-          ></Form.Field>
+          <Form.Field width={10}>
+          <label>Outcome Name</label>
+          {newOutcomeTextField.node}
+          </Form.Field>
           <Form.Field width={3}>
             <label>Probability (%)</label>
             {newOutcomeProbabilityField.node}
@@ -161,13 +151,13 @@ const Page = () => {
               fluid
               primary
               onClick={() => {
-                if (!newOutcomeFormHasErrors) {
+                if (newOutcomeTextField.isValid && newOutcomeProbabilityField.isValid) {
                   addOutcome();
-                  setNewOutcomeName("");
+                  newOutcomeTextField.reset();
                   newOutcomeProbabilityField.reset();
-                  setShowOutcomeErrors(false);
                 } else {
-                  setShowOutcomeErrors(true);
+                  newOutcomeTextField.forceValidation();
+                  newOutcomeProbabilityField.forceValidation();
                 }
               }}
             >
