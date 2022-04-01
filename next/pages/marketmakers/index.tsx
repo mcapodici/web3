@@ -83,6 +83,17 @@ const Page = () => {
     (x) => x.value === marketMakerSystem
   );
 
+  const addOutcomeClicked = () => {
+    if (newOutcomeTextField.isValid && newOutcomeProbabilityField.isValid) {
+      addOutcome();
+      newOutcomeTextField.reset();
+      newOutcomeProbabilityField.reset();
+    } else {
+      newOutcomeTextField.forceValidation();
+      newOutcomeProbabilityField.forceValidation();
+    }
+  };
+
   return (
     <Layout>
       <h1>Market Maker Simulator</h1>
@@ -138,8 +149,8 @@ const Page = () => {
       <Form>
         <Form.Group>
           <Form.Field width={10}>
-          <label>Outcome Name</label>
-          {newOutcomeTextField.node}
+            <label>Outcome Name</label>
+            {newOutcomeTextField.node}
           </Form.Field>
           <Form.Field width={3}>
             <label>Probability (%)</label>
@@ -147,20 +158,7 @@ const Page = () => {
           </Form.Field>
           <Form.Field width={3}>
             <label>&nbsp;</label>
-            <Button
-              fluid
-              primary
-              onClick={() => {
-                if (newOutcomeTextField.isValid && newOutcomeProbabilityField.isValid) {
-                  addOutcome();
-                  newOutcomeTextField.reset();
-                  newOutcomeProbabilityField.reset();
-                } else {
-                  newOutcomeTextField.forceValidation();
-                  newOutcomeProbabilityField.forceValidation();
-                }
-              }}
-            >
+            <Button fluid primary onClick={addOutcomeClicked}>
               Add outcome
             </Button>
           </Form.Field>
