@@ -18,6 +18,60 @@ interface Outcome {
   probability: number;
 }
 
+function useNumericField(
+  fieldNameForDisplay: string,
+  isRequired: boolean,
+  numericValidation: (n: number) => string | undefined,
+  initialText: string,
+  maxLength: number,
+  placeHolder: string
+) {
+  const [fieldText, setFieldText] = useState(initialText);
+  const [showErrorOnField, setShowErrorOnField] = useState(false);
+
+  const asNumber = Number(fieldText);
+
+  const fieldInvalidReason =
+    fieldText === ""
+      ? isRequired
+        ? `${fieldNameForDisplay} is required`
+        : undefined
+      : !Number.isFinite(asNumber)
+      ? `${fieldNameForDisplay} is not a valid number`
+      : numericValidation(asNumber);
+
+  const node = (
+    <Form.Input
+      error={
+        fieldInvalidReason && showErrorOnField
+          ? {
+              content: fieldInvalidReason,
+              pointing: "above",
+            }
+          : undefined
+      }
+      maxLength={maxLength}
+      placeholder={placeHolder}
+      value={fieldText}
+      onChange={(event, data) => {
+        setFieldText(data.value);
+        setShowErrorOnField(true);
+      }}
+    />
+  );
+
+  const isValid = !fieldInvalidReason;
+  return {
+    node,
+    asNumber: isValid ? asNumber : undefined,
+    isValid,
+    reset: () => {
+      setFieldText(initialText);
+      setShowErrorOnField(false);
+    },
+  };
+}
+
 const Page = () => {
   const marketMakerSystemOptions = [
     {
@@ -30,23 +84,29 @@ const Page = () => {
 
   const [marketMakerSystem, setMarketMakerSystem] = useState("parimutuel");
   const [newOutcomeName, setNewOutcomeName] = useState("");
-  const [newOutcomeProbabilityPercent, setNewOutcomeProbabilityPercent] =
-    useState("");
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
   const [showOutcomeErrors, setShowOutcomeErrors] = useState(false);
 
-  const newOutcomeProbabilityPercentAsNumber = Number(
-    newOutcomeProbabilityPercent
+  const newOutcomeProbabilityField = useNumericField(
+    "Probability",
+    true,
+    (n: number) =>
+      n < 0 || n > 100
+        ? "Probability must be between 0 and 100 inclusive"
+        : undefined,
+    "",
+    10,
+    "e.g. 20"
   );
-  const newOutcomeProbabilityPercentNumberInvalidReason =
-    newOutcomeProbabilityPercent === ""
-      ? "Probability is required"
-      : !Number.isFinite(newOutcomeProbabilityPercentAsNumber)
-      ? "Probability is not a valid number"
-      : newOutcomeProbabilityPercentAsNumber < 0 ||
-        newOutcomeProbabilityPercentAsNumber > 100
-      ? "Probability must be between 0 and 100 inclusive"
-      : undefined;
+
+  const liquidityField = useNumericField(
+    "Liquidity",
+    true,
+    (n: number) => undefined,
+    "",
+    10,
+    "Liquidity"
+  );
 
   const newOutcomeNameInvalidReason = !newOutcomeName
     ? "Outcome name is required"
@@ -55,16 +115,16 @@ const Page = () => {
     : undefined;
 
   const newOutcomeFormHasErrors =
-    !!newOutcomeNameInvalidReason ||
-    !!newOutcomeProbabilityPercentNumberInvalidReason;
+    !!newOutcomeNameInvalidReason || !newOutcomeProbabilityField.isValid;
 
   const addOutcome = () => {
-    if (newOutcomeFormHasErrors) return;
+    const prob = newOutcomeProbabilityField.asNumber;
+    if (prob === undefined || newOutcomeName === undefined) return;
     setOutcomes((os) => [
       ...os,
       {
         name: newOutcomeName,
-        probability: newOutcomeProbabilityPercentAsNumber / 100,
+        probability: prob / 100,
       },
     ]);
   };
@@ -146,24 +206,7 @@ const Page = () => {
           ></Form.Field>
           <Form.Field width={3}>
             <label>Probability (%)</label>
-            <Form.Input
-              error={
-                newOutcomeProbabilityPercentNumberInvalidReason &&
-                showOutcomeErrors
-                  ? {
-                      content: newOutcomeProbabilityPercentNumberInvalidReason,
-                      pointing: "above",
-                    }
-                  : undefined
-              }
-              maxLength={10}
-              placeholder="e.g. 20"
-              value={newOutcomeProbabilityPercent}
-              onChange={(event, data) => {
-                setNewOutcomeProbabilityPercent(data.value);
-                setShowOutcomeErrors(false);
-              }}
-            />
+            {newOutcomeProbabilityField.node}
           </Form.Field>
           <Form.Field width={3}>
             <label>&nbsp;</label>
@@ -174,7 +217,7 @@ const Page = () => {
                 if (!newOutcomeFormHasErrors) {
                   addOutcome();
                   setNewOutcomeName("");
-                  setNewOutcomeProbabilityPercent("");
+                  newOutcomeProbabilityField.reset();
                   setShowOutcomeErrors(false);
                 } else {
                   setShowOutcomeErrors(true);
@@ -186,7 +229,7 @@ const Page = () => {
           </Form.Field>
         </Form.Group>
       </Form>
-      <h3>Outcomes</h3>
+      <h4>Outcomes</h4>
       {outcomes.length ? (
         <Table unstackable>
           <Table.Header>
@@ -216,6 +259,10 @@ const Page = () => {
       ) : (
         <p>No outcomes have been added yet.</p>
       )}
+      <h3>Step 3: Provide Liquidity</h3>
+      <Form>
+        <Form.Group>{liquidityField.node}</Form.Group>
+      </Form>
     </Layout>
   );
 };
